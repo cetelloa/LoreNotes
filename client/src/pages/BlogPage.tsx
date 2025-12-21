@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight } from 'lucide-react';
-
-// Dynamic API URL
-const getApiHost = () => window.location.hostname;
-const getBlogUrl = () => `http://${getApiHost()}:4000/api/blog`;
+import { BLOG_URL } from '../config';
 
 interface BlogPost {
     _id: string;
@@ -26,7 +23,7 @@ export const BlogPage = () => {
 
     const fetchPosts = async () => {
         try {
-            const res = await fetch(getBlogUrl());
+            const res = await fetch(BLOG_URL);
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data.filter((p: BlogPost) => p.isPublished));

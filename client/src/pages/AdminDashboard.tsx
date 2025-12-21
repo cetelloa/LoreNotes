@@ -4,12 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
 import { Upload, Image, FileText, DollarSign, Tag, Info, Trash2, Edit, BookOpen, Plus, Save } from 'lucide-react';
-
-// Dynamic API URL
-const getApiHost = () => window.location.hostname;
-const getTemplatesUrl = () => `http://${getApiHost()}:8080/api/templates`;
-const getAuthUrl = () => `http://${getApiHost()}:4000/api/auth`;
-const getBlogUrl = () => `http://${getApiHost()}:4000/api/blog`;
+import { TEMPLATES_URL, AUTH_URL, BLOG_URL } from '../config';
 
 interface Template {
     id: string;
@@ -69,7 +64,7 @@ export const AdminDashboard = () => {
     const checkAdminStatus = async () => {
         if (!token) { navigate('/login'); return; }
         try {
-            const res = await fetch(`${getAuthUrl()}/me`, {
+            const res = await fetch(`${AUTH_URL}/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -81,7 +76,7 @@ export const AdminDashboard = () => {
 
     const fetchTemplates = async () => {
         try {
-            const res = await fetch(getTemplatesUrl());
+            const res = await fetch(TEMPLATES_URL);
             const data = await res.json();
             setTemplates(data);
         } catch (err) { console.error('Error fetching templates:', err); }
@@ -89,7 +84,7 @@ export const AdminDashboard = () => {
 
     const fetchBlogPosts = async () => {
         try {
-            const res = await fetch(getBlogUrl(), {
+            const res = await fetch(BLOG_URL, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -128,7 +123,7 @@ export const AdminDashboard = () => {
         if (templateFile) formData.append('templateFile', templateFile);
 
         try {
-            const url = isEditing ? `${getTemplatesUrl()}/${editingTemplate.id}` : getTemplatesUrl();
+            const url = isEditing ? `${TEMPLATES_URL}/${editingTemplate.id}` : TEMPLATES_URL;
             const method = isEditing ? 'PUT' : 'POST';
 
             const res = await fetch(url, { method, body: formData });
@@ -157,7 +152,7 @@ export const AdminDashboard = () => {
     const handleDeleteTemplate = async (id: string) => {
         if (!confirm('¿Eliminar esta plantilla?')) return;
         try {
-            await fetch(`${getTemplatesUrl()}/${id}`, { method: 'DELETE' });
+            await fetch(`${TEMPLATES_URL}/${id}`, { method: 'DELETE' });
             fetchTemplates();
         } catch (err) { console.error('Delete error:', err); }
     };
@@ -169,7 +164,7 @@ export const AdminDashboard = () => {
 
         try {
             const isNew = !editingBlog._id;
-            const url = isNew ? getBlogUrl() : `${getBlogUrl()}/${editingBlog._id}`;
+            const url = isNew ? BLOG_URL : `${BLOG_URL}/${editingBlog._id}`;
             const method = isNew ? 'POST' : 'PUT';
 
             const res = await fetch(url, {
@@ -194,7 +189,7 @@ export const AdminDashboard = () => {
     const handleDeleteBlogPost = async (id: string) => {
         if (!confirm('¿Eliminar este post?')) return;
         try {
-            await fetch(`${getBlogUrl()}/${id}`, {
+            await fetch(`${BLOG_URL}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

@@ -21,11 +21,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Dynamic API URL based on current hostname (for mobile access)
-const getApiUrl = () => {
-    const hostname = window.location.hostname;
-    return `http://${hostname}:4000/api/auth`;
-};
+// Import centralized API URL
+import { AUTH_URL } from '../config';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -41,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            const response = await fetch(`${getApiUrl()}/me`, {
+            const response = await fetch(`${AUTH_URL}/me`, {
                 headers: { 'Authorization': `Bearer ${storedToken}` }
             });
 
@@ -67,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
-            const response = await fetch(`${getApiUrl()}/login`, {
+            const response = await fetch(`${AUTH_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -82,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('token', data.token);
 
             // Immediately fetch fresh user data after login
-            const meResponse = await fetch(`${getApiUrl()}/me`, {
+            const meResponse = await fetch(`${AUTH_URL}/me`, {
                 headers: { 'Authorization': `Bearer ${data.token}` }
             });
 
@@ -104,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const register = async (username: string, email: string, password: string): Promise<boolean> => {
         try {
-            const response = await fetch(`${getApiUrl()}/register`, {
+            const response = await fetch(`${AUTH_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })

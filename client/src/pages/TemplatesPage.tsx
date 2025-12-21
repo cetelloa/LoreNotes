@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Tag, DollarSign, Download, Eye } from 'lucide-react';
-
-// Dynamic API URL
-const getApiHost = () => window.location.hostname;
-const getTemplatesUrl = () => `http://${getApiHost()}:8080/api/templates`;
+import { Search, DollarSign, Download, Eye } from 'lucide-react';
+import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 
 interface Template {
     id: string;
@@ -32,7 +29,7 @@ export const TemplatesPage = () => {
 
     const fetchTemplates = async () => {
         try {
-            const res = await fetch(getTemplatesUrl());
+            const res = await fetch(TEMPLATES_URL);
             const data = await res.json();
             setTemplates(data);
         } catch (error) {
@@ -54,7 +51,7 @@ export const TemplatesPage = () => {
 
     const getImageUrl = (template: Template) => {
         if (template.imageFileId) {
-            return `http://${getApiHost()}:8080/api/templates/${template.id}/image`;
+            return getTemplateImageUrl(template.id);
         }
         // Placeholder images based on category
         const placeholders: Record<string, string> = {

@@ -1,18 +1,26 @@
-// API Configuration
-// Use the current hostname to connect to backend services
-const getApiHost = () => {
-    const hostname = window.location.hostname;
-    // If accessing from mobile/external, use the same host for API
-    return hostname === 'localhost' ? 'localhost' : hostname;
+// API Configuration for Production (Render) and Development
+const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('192.168');
+
+// Production URLs (Render.com)
+const PROD_URLS = {
+    auth: 'https://lorenotes-auth.onrender.com/api/auth',
+    templates: 'https://lorenotes-templates.onrender.com/api/templates',
+    chatbot: 'https://lorenotes-chatbot.onrender.com/api/chat',
+    blog: 'https://lorenotes-auth.onrender.com/api/blog'
 };
 
-const API_HOST = getApiHost();
-
-export const API_URLS = {
-    auth: `http://${API_HOST}:4000/api/auth`,
-    templates: `http://${API_HOST}:8080/api/templates`,
-    chatbot: `http://${API_HOST}:4002/api/chat`
+// Development URLs (local)
+const getDevUrls = () => {
+    const host = window.location.hostname;
+    return {
+        auth: `http://${host}:4000/api/auth`,
+        templates: `http://${host}:8080/api/templates`,
+        chatbot: `http://${host}:4002/api/chat`,
+        blog: `http://${host}:4000/api/blog`
+    };
 };
+
+export const API_URLS = isProduction ? PROD_URLS : getDevUrls();
 
 // Template API functions
 export const api = {

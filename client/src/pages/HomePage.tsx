@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CraftButton } from '../components/CraftButton';
 import { Sparkles, Heart, Cake, Briefcase, GraduationCap, Star, Download, ArrowRight } from 'lucide-react';
-
-// Dynamic API URL
-const getApiHost = () => window.location.hostname;
-const getTemplatesUrl = () => `http://${getApiHost()}:8080/api/templates`;
+import { TEMPLATES_URL } from '../config';
 
 interface Template {
     id: string;
@@ -59,7 +56,7 @@ export const HomePage = () => {
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
-                const res = await fetch(getTemplatesUrl());
+                const res = await fetch(TEMPLATES_URL);
                 if (res.ok) {
                     const data = await res.json();
                     // Sort by download count and take top 6

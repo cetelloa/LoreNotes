@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, RotateCcw } from 'lucide-react';
-
-// Dynamic API URL based on current hostname
-const getChatUrl = () => `http://${window.location.hostname}:4002/api/chat`;
+import { CHATBOT_URL } from '../config';
 
 // Generate unique session ID
 const getSessionId = () => {
@@ -49,7 +47,7 @@ export const ChatWidget = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(getChatUrl(), {
+            const response = await fetch(CHATBOT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -70,7 +68,7 @@ export const ChatWidget = () => {
 
     const handleClearChat = async () => {
         try {
-            await fetch(`${getChatUrl()}/clear`, {
+            await fetch(`${CHATBOT_URL}/clear`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sessionId: getSessionId() })
