@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
+import { AUTH_URL } from '../config';
 
-const API_URL = 'http://localhost:4000/api/auth';
 
 export const VerifyEmailPage = () => {
     const location = useLocation();
@@ -20,7 +20,7 @@ export const VerifyEmailPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/verify-email`, {
+            const response = await fetch(`${AUTH_URL}/verify-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, code })
@@ -50,7 +50,7 @@ export const VerifyEmailPage = () => {
         setSuccess('');
 
         try {
-            const response = await fetch(`${API_URL}/resend-code`, {
+            const response = await fetch(`${AUTH_URL}/resend-code`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })

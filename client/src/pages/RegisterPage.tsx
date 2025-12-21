@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
-
-// Dynamic API URL based on current hostname (for mobile access)
-const getApiUrl = () => {
-    const hostname = window.location.hostname;
-    return `http://${hostname}:4000/api/auth`;
-};
+import { AUTH_URL } from '../config';
 
 export const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -35,7 +30,7 @@ export const RegisterPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${getApiUrl()}/register`, {
+            const response = await fetch(`${AUTH_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
