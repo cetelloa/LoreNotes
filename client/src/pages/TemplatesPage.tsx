@@ -1,0 +1,197 @@
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Tag, DollarSign, Download, Eye } from 'lucide-react';
+
+// Dynamic API URL
+const getApiHost = () => window.location.hostname;
+const getTemplatesUrl = () => `http://${getApiHost()}:8080/api/templates`;
+
+interface Template {
+    id: string;
+    title: string;
+    description: string;
+    purpose: string;
+    price: number;
+    category: string;
+    author: string;
+    imageFileId: string;
+    downloadCount: number;
+}
+
+export const TemplatesPage = () => {
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+
+    const categories = ['bodas', 'cumpleanos', 'negocios', 'educacion', 'otros'];
+
+    useEffect(() => {
+        fetchTemplates();
+    }, []);
+
+    const fetchTemplates = async () => {
+        try {
+            const res = await fetch(getTemplatesUrl());
+            const data = await res.json();
+            setTemplates(data);
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+        }
+        setLoading(false);
+    };
+
+    const filteredTemplates = templates.filter(t => {
+        const matchesSearch = !searchTerm ||
+            t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = !selectedCategory || t.category === selectedCategory;
+
+        return matchesSearch && matchesCategory;
+    });
+
+    const getImageUrl = (template: Template) => {
+        if (template.imageFileId) {
+            return `http://${getApiHost()}:8080/api/templates/${template.id}/image`;
+        }
+        // Placeholder images based on category
+        const placeholders: Record<string, string> = {
+            bodas: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop',
+            cumpleanos: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
+            negocios: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop',
+            educacion: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop',
+            otros: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop'
+        };
+        return placeholders[template.category] || placeholders.otros;
+    };
+
+    const getCategoryLabel = (cat: string) => {
+        const labels: Record<string, string> = {
+            bodas: '💍 Bodas',
+            cumpleanos: '🎂 Cumpleaños',
+            negocios: '💼 Negocios',
+            educacion: '📚 Educación',
+            otros: '✨ Otros'
+        };
+        return labels[cat] || cat;
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <motion.div
+                className="bg-gradient-to-r from-primary-craft to-secondary-craft p-4 md:p-6 rounded-xl border-4 border-ink-black"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                <h1 className="text-2xl md:text-4xl font-heading text-white">Explorar Plantillas 🎨</h1>
+                <p className="text-white/80 text-sm md:text-base">Encuentra la plantilla perfecta para tu proyecto</p>
+            </motion.div>
+
+            {/* Search and Filters */}
+            <motion.div
+                className="bg-white/95 p-4 rounded-xl border-4 border-ink-black flex flex-col md:flex-row gap-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+            >
+                {/* Search */}
+                <div className="flex-1 relative">
+                    <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Buscar plantillas..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border-2 border-dashed border-gray-300 rounded-lg focus:outline-none focus:border-primary-craft"
+                    />
+                </div>
+
+                {/* Category Filter */}
+                <div className="flex gap-2 flex-wrap">
+                    <button
+                        onClick={() => setSelectedCategory('')}
+                        className={`px-3 py-1 rounded-full text-sm font-heading border-2 transition-all
+                            ${!selectedCategory ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300 hover:border-primary-craft'}`}
+                    >
+                        Todas
+                    </button>
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-3 py-1 rounded-full text-sm font-heading border-2 transition-all
+                                ${selectedCategory === cat ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300 hover:border-primary-craft'}`}
+                        >
+                            {getCategoryLabel(cat)}
+                        </button>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* Templates Grid */}
+            {loading ? (
+                <div className="text-center py-12">
+                    <div className="animate-spin w-12 h-12 border-4 border-primary-craft border-t-transparent rounded-full mx-auto"></div>
+                    <p className="mt-4 text-gray-500">Cargando plantillas...</p>
+                </div>
+            ) : filteredTemplates.length === 0 ? (
+                <div className="text-center py-12 bg-white/90 rounded-xl border-4 border-ink-black">
+                    <p className="text-xl text-gray-500">No se encontraron plantillas 😢</p>
+                    <p className="text-gray-400 mt-2">Prueba con otra búsqueda o categoría</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    {filteredTemplates.map((template, idx) => (
+                        <motion.div
+                            key={template.id}
+                            className="bg-white rounded-xl border-4 border-ink-black overflow-hidden shadow-[4px_4px_0px_rgba(45,49,66,0.2)] hover:shadow-[6px_6px_0px_rgba(45,49,66,0.3)] transition-shadow"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            whileHover={{ y: -4 }}
+                        >
+                            {/* Image */}
+                            <div className="relative h-40 md:h-48 overflow-hidden bg-gray-100">
+                                <img
+                                    src={getImageUrl(template)}
+                                    alt={template.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop';
+                                    }}
+                                />
+                                <div className="absolute top-2 right-2 bg-accent-craft text-ink-black text-xs font-bold px-2 py-1 rounded-full border-2 border-ink-black">
+                                    {getCategoryLabel(template.category)}
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-4">
+                                <h3 className="font-heading font-bold text-lg text-ink-black line-clamp-1">{template.title}</h3>
+                                <p className="text-gray-500 text-sm mt-1 line-clamp-2">{template.description || template.purpose}</p>
+
+                                {/* Meta */}
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center gap-1 text-primary-craft font-bold">
+                                        <DollarSign size={16} />
+                                        <span>{(template.price || 0).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" title="Ver detalles">
+                                            <Eye size={18} />
+                                        </button>
+                                        <button className="p-2 bg-primary-craft text-white rounded-lg hover:bg-primary-craft/80 transition-colors" title="Descargar">
+                                            <Download size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};

@@ -1,0 +1,46 @@
+services:
+  # === Databases ===
+  mongodb:
+    image: mongo:7.0
+    container_name: lorenotes-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # === Microservices ===
+  auth-service:
+    build: ./services/auth-service
+    container_name: lorenotes-auth
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MONGO_URI=mongodb://mongodb:27017/lorenotes-auth
+      - JWT_SECRET=dev_secret_key
+    depends_on:
+      - mongodb
+
+  template-service:
+    build: ./services/template-service
+    container_name: lorenotes-template
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/lorenotes-templates
+    depends_on:
+      - mongodb
+
+  chatbot-service:
+    build: ./services/chatbot-service
+    container_name: lorenotes-chatbot
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+      - OPENAI_API_KEY=mock_key
+  # === Frontend ===
+  # In production this would be built with Nginx, for dev we assume local or a separate container
+
+volumes:
+  mongo-data:

@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Fredoka:wght@300;400;600&family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap');
+
+@import "tailwindcss";
+
+/* Tailwind v4 Theme Configuration */
+@theme {
+  /* Colors */
+  --color-primary-craft: #FF6B9D;
+  --color-secondary-craft: #FEC180;
+  --color-accent-craft: #A8E6CF;
+  --color-craft-purple: #C9A0DC;
+  --color-craft-blue: #84C7D0;
+  --color-paper-white: #FFFEF7;
+  --color-ink-black: #2D3142;
+  --color-craft-gray: #BFC0C0;
+  --color-wood-brown: #A67B5B;
+  --color-success-green: #4ECDC4;
+  --color-warning-yellow: #FFE66D;
+  --color-error-red: #FF6B6B;
+  --color-info-blue: #4A90E2;
+
+  /* Fonts */
+  --font-heading: 'Fredoka', 'Comic Sans MS', cursive;
+  --font-handwriting: 'Caveat', 'Dancing Script', cursive;
+  --font-body: 'Inter', 'Roboto', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper-white);
+    color: var(--color-ink-black);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    color: var(--color-ink-black);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-paper-white);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-secondary-craft);
+  border-radius: 9999px;
+  border: 2px solid var(--color-paper-white);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary-craft);
+}
+
+/* Animation utilities */
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
