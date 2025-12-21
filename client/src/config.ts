@@ -1,7 +1,17 @@
 // Centralized API Configuration
-const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('192.168');
+// Check for production: Vercel, or any non-localhost/non-local-IP domain
+const hostname = window.location.hostname;
+const isProduction =
+    hostname.includes('vercel.app') ||
+    hostname.includes('netlify.app') ||
+    hostname.includes('.com') ||
+    hostname.includes('.io') ||
+    (hostname !== 'localhost' &&
+        !hostname.includes('192.168') &&
+        !hostname.includes('127.0.0.1') &&
+        !hostname.match(/^\d+\.\d+\.\d+\.\d+$/));
 
-// Production URLs (Render.com)
+// Production URLs (Render.com) - ALWAYS use HTTPS
 const PROD = {
     AUTH_URL: 'https://lorenotes-auth.onrender.com/api/auth',
     TEMPLATES_URL: 'https://lorenotes-templates.onrender.com/api/templates',
@@ -9,18 +19,20 @@ const PROD = {
     BLOG_URL: 'https://lorenotes-auth.onrender.com/api/blog'
 };
 
-// Development URLs
-const getDev = () => {
-    const host = window.location.hostname;
-    return {
-        AUTH_URL: `http://${host}:4000/api/auth`,
-        TEMPLATES_URL: `http://${host}:8080/api/templates`,
-        CHATBOT_URL: `http://${host}:4002/api/chat`,
-        BLOG_URL: `http://${host}:4000/api/blog`
-    };
+// Development URLs (local Docker)
+const DEV = {
+    AUTH_URL: `http://${hostname}:4000/api/auth`,
+    TEMPLATES_URL: `http://${hostname}:8080/api/templates`,
+    CHATBOT_URL: `http://${hostname}:4002/api/chat`,
+    BLOG_URL: `http://${hostname}:4000/api/blog`
 };
 
-const config = isProduction ? PROD : getDev();
+// Force production for debugging - uncomment if needed
+// const config = PROD;
+const config = isProduction ? PROD : DEV;
+
+console.log('Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+console.log('AUTH_URL:', config.AUTH_URL);
 
 export const AUTH_URL = config.AUTH_URL;
 export const TEMPLATES_URL = config.TEMPLATES_URL;
