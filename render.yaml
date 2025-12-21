@@ -1,0 +1,44 @@
+services:
+  # Auth Service
+  - type: web
+    name: lorenotes-auth
+    env: node
+    plan: free
+    buildCommand: cd services/auth-service && npm install
+    startCommand: cd services/auth-service && node index.js
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+
+  # Chatbot Service
+  - type: web
+    name: lorenotes-chatbot
+    env: node
+    plan: free
+    buildCommand: cd services/chatbot-service && npm install
+    startCommand: cd services/chatbot-service && node index.js
+    envVars:
+      - key: PORT
+        value: 4002
+      - key: MONGO_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # Template Service (Java)
+  - type: web
+    name: lorenotes-templates
+    env: docker
+    plan: free
+    dockerfilePath: ./services/template-service/Dockerfile
+    envVars:
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
