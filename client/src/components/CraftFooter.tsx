@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 // Configure your social media links here
 const socialLinks = [
     { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/lore_notes2/', color: '#E4405F' },
-    { name: 'TikTok', icon: Music2, url: 'https://tiktok.com/@lorenotes', color: '#000000' },
+    { name: 'TikTok', icon: Music2, url: 'https://www.tiktok.com/@lore_notes2?lang=es', color: '#000000' },
     { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/lorenotes', color: '#1877F2' },
     { name: 'Twitter/X', icon: Twitter, url: 'https://x.com/lorenotes', color: '#1DA1F2' },
     { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/@lorenotes', color: '#FF0000' },
