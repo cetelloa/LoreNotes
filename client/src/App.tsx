@@ -15,6 +15,8 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AccountPage } from './pages/AccountPage';
 import { CartPage } from './pages/CartPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
 
                   {/* Protected Routes */}
                   <Route path="/" element={

@@ -1,5 +1,6 @@
 import { Instagram, Music2, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 // Configure your social media links here
 const socialLinks = [
@@ -39,10 +40,10 @@ export const CraftFooter = () => {
                 <div className="space-y-4">
                     <h3 className="text-xl font-heading text-secondary-craft">Explora</h3>
                     <ul className="space-y-2 font-body text-gray-300">
-                        <li className="hover:text-white cursor-pointer transition-colors">Plantillas Nuevas</li>
-                        <li className="hover:text-white cursor-pointer transition-colors">Vendedores Top</li>
-                        <li className="hover:text-white cursor-pointer transition-colors">Blog Creativo</li>
-                        <li className="hover:text-white cursor-pointer transition-colors">Ayuda IA</li>
+                        <li><Link to="/templates" className="hover:text-white transition-colors">Plantillas</Link></li>
+                        <li><Link to="/blog" className="hover:text-white transition-colors">Blog Creativo</Link></li>
+                        <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
+                        <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
                     </ul>
                 </div>
 

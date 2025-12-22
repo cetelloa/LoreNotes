@@ -14,6 +14,7 @@ interface Template {
     price: number;
     category: string;
     imageFileId: string;
+    tutorialVideoUrl?: string;
     createdAt: string;
 }
 
@@ -51,6 +52,7 @@ export const AdminDashboard = () => {
     const [purpose, setPurpose] = useState('');
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState('');
+    const [tutorialVideoUrl, setTutorialVideoUrl] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [templateFile, setTemplateFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -96,7 +98,8 @@ export const AdminDashboard = () => {
 
     const resetTemplateForm = () => {
         setTitle(''); setDescription(''); setPurpose('');
-        setPrice(''); setCategory(''); setImageFile(null); setTemplateFile(null);
+        setPrice(''); setCategory(''); setTutorialVideoUrl('');
+        setImageFile(null); setTemplateFile(null);
         setEditingTemplate(null);
     };
 
@@ -119,6 +122,7 @@ export const AdminDashboard = () => {
         formData.append('price', price);
         formData.append('author', user?.username || 'Admin');
         formData.append('category', category);
+        if (tutorialVideoUrl) formData.append('tutorialVideoUrl', tutorialVideoUrl);
         if (imageFile) formData.append('image', imageFile);
         if (templateFile) formData.append('templateFile', templateFile);
 
@@ -147,6 +151,7 @@ export const AdminDashboard = () => {
         setPurpose(template.purpose || '');
         setPrice(template.price?.toString() || '');
         setCategory(template.category || '');
+        setTutorialVideoUrl(template.tutorialVideoUrl || '');
     };
 
     const handleDeleteTemplate = async (id: string) => {
@@ -276,6 +281,12 @@ export const AdminDashboard = () => {
                                         <option value="otros">Otros</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-1 font-heading mb-1 text-sm">📹 Video Tutorial (opcional)</label>
+                                <input type="url" value={tutorialVideoUrl} onChange={(e) => setTutorialVideoUrl(e.target.value)}
+                                    className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm"
+                                    placeholder="URL de TikTok o Instagram" />
                             </div>
                             <div>
                                 <label className="flex items-center gap-1 font-heading mb-1 text-sm"><Image size={14} /> Imagen {editingTemplate && '(opcional)'}</label>

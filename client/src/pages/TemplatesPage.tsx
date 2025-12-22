@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, DollarSign, ShoppingCart, Eye, Check, Play, X } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 import { useCart } from '../context/CartContext';
 
@@ -14,6 +14,7 @@ interface Template {
     author: string;
     imageFileId: string;
     downloadCount: number;
+    tutorialVideoUrl?: string;
 }
 
 export const TemplatesPage = () => {
@@ -22,6 +23,7 @@ export const TemplatesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
+    const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const { addToCart, cart } = useCart();
 
     const categories = ['bodas', 'cumpleanos', 'negocios', 'educacion', 'otros'];
@@ -179,6 +181,15 @@ export const TemplatesPage = () => {
                                         <span>{(template.price || 0).toFixed(2)}</span>
                                     </div>
                                     <div className="flex gap-2">
+                                        {template.tutorialVideoUrl && (
+                                            <button
+                                                onClick={() => setVideoModal({ isOpen: true, url: template.tutorialVideoUrl!, title: template.title })}
+                                                className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                                                title="Ver tutorial"
+                                            >
+                                                <Play size={18} />
+                                            </button>
+                                        )}
                                         <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" title="Ver detalles">
                                             <Eye size={18} />
                                         </button>
@@ -197,8 +208,8 @@ export const TemplatesPage = () => {
                                                 }
                                             }}
                                             className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                    ? 'bg-green-500 text-white'
-                                                    : 'bg-primary-craft text-white hover:bg-primary-craft/80'
+                                                ? 'bg-green-500 text-white'
+                                                : 'bg-primary-craft text-white hover:bg-primary-craft/80'
                                                 }`}
                                             title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
                                         >
@@ -213,6 +224,49 @@ export const TemplatesPage = () => {
                     ))}
                 </div>
             )}
+
+            {/* Video Tutorial Modal */}
+            <AnimatePresence>
+                {videoModal.isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border-4 border-ink-black"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-heading text-ink-black">📹 Video Tutorial</h3>
+                                <button
+                                    onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <p className="text-gray-600 mb-4">{videoModal.title}</p>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Aprende cómo usar esta plantilla con nuestro video tutorial en redes sociales.
+                            </p>
+                            <a
+                                href={videoModal.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center rounded-xl font-heading hover:from-purple-600 hover:to-pink-600 transition-all"
+                            >
+                                🎬 Ver Tutorial
+                            </a>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

@@ -33,6 +33,7 @@ public class Template {
     private Integer rating;
     private Integer downloadCount;
     private Boolean isActive;
+    private String tutorialVideoUrl; // URL to TikTok/Instagram tutorial video
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
