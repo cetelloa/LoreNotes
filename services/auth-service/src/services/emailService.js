@@ -1,41 +1,37 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter based on email service
+// Create Gmail transporter with explicit configuration
 const createTransporter = () => {
-    const service = process.env.EMAIL_SERVICE || 'gmail';
     const user = process.env.EMAIL_USER;
     const pass = process.env.EMAIL_PASS;
 
-    // For university emails (Office 365)
-    if (service === 'hotmail' || service === 'outlook' || user?.includes('.edu')) {
-        return nodemailer.createTransport({
-            host: 'smtp.office365.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: user,
-                pass: pass
-            },
-            tls: {
-                ciphers: 'SSLv3',
-                rejectUnauthorized: false
-            }
-        });
-    }
+    console.log('📧 Email config:', {
+        user: user ? `${user.substring(0, 5)}...` : 'NOT SET',
+        pass: pass ? 'SET (hidden)' : 'NOT SET'
+    });
 
-    // For Gmail
+    // Gmail configuration with explicit settings
     return nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Use TLS
         auth: {
             user: user,
             pass: pass
+        },
+        tls: {
+            rejectUnauthorized: false
         }
     });
 };
 
 const sendVerificationEmail = async (email, code, username) => {
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS;
+
     // If no email credentials configured, just log the code
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    if (!user || !pass) {
+        console.log('⚠️ Email credentials not configured');
         console.log('========================================');
         console.log(`📧 VERIFICATION CODE for ${email}`);
         console.log(`   Code: ${code}`);
@@ -43,10 +39,13 @@ const sendVerificationEmail = async (email, code, username) => {
         return true;
     }
 
+    console.log(`📤 Attempting to send email to: ${email}`);
+    console.log(`   From: ${user}`);
+
     const transporter = createTransporter();
 
     const mailOptions = {
-        from: `"LoreNotes" <${process.env.EMAIL_USER}>`,
+        from: `"LoreNotes" <${user}>`,
         to: email,
         subject: '🎨 LoreNotes - Verifica tu cuenta',
         html: `
@@ -64,11 +63,14 @@ const sendVerificationEmail = async (email, code, username) => {
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent to ${email}`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully!`);
+        console.log(`   Message ID: ${info.messageId}`);
+        console.log(`   Response: ${info.response}`);
         return true;
     } catch (error) {
         console.error('❌ Error sending email:', error.message);
+        console.error('   Full error:', error);
         // Fallback: log the code if email fails
         console.log('========================================');
         console.log(`📧 VERIFICATION CODE for ${email}`);
