@@ -84,6 +84,11 @@ export const LoginPage = () => {
                         Regístrate aquí
                     </Link>
                 </p>
+                <p className="text-center mt-3 font-body text-sm">
+                    <Link to="/forgot-password" className="text-gray-500 hover:text-primary-craft transition-colors">
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </p>
             </motion.div>
         </div>
     );

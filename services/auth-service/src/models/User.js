@@ -50,6 +50,15 @@ const userSchema = new mongoose.Schema({
         price: Number,
         purchaseDate: { type: Date, default: Date.now }
     }],
+    // Password reset
+    resetPasswordCode: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -74,6 +83,14 @@ userSchema.methods.generateVerificationCode = function () {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     this.verificationCode = code;
     this.verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    return code;
+};
+
+// Generate password reset code
+userSchema.methods.generateResetCode = function () {
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    this.resetPasswordCode = code;
+    this.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     return code;
 };
 

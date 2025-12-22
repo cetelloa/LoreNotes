@@ -17,6 +17,8 @@ import { AccountPage } from './pages/AccountPage';
 import { CartPage } from './pages/CartPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -39,6 +41,8 @@ function App() {
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                   {/* Protected Routes */}
                   <Route path="/" element={

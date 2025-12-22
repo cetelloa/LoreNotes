@@ -380,3 +380,59 @@ exports.getPurchases = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener compras' });
     }
 };
+
+// Forgot password - Send reset code
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(404).json({ message: 'No existe una cuenta con ese email' });
+        }
+
+        // Generate reset code
+        const resetCode = user.generateResetCode();
+        await user.save();
+
+        // Send reset email
+        const { sendPasswordResetEmail } = require('../services/emailService');
+        await sendPasswordResetEmail(email, resetCode, user.username);
+
+        res.json({ message: 'Código de recuperación enviado a tu email', email });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ message: 'Error al procesar solicitud' });
+    }
+};
+
+// Reset password - Verify code and set new password
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, code, newPassword } = req.body;
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        if (user.resetPasswordCode !== code) {
+            return res.status(400).json({ message: 'Código incorrecto' });
+        }
+
+        if (user.resetPasswordExpires < new Date()) {
+            return res.status(400).json({ message: 'El código ha expirado. Solicita uno nuevo.' });
+        }
+
+        // Update password
+        user.password = newPassword;
+        user.resetPasswordCode = null;
+        user.resetPasswordExpires = null;
+        await user.save();
+
+        res.json({ message: 'Contraseña actualizada correctamente' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Error al restablecer contraseña' });
+    }
+};

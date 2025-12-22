@@ -51,7 +51,7 @@ const sendVerificationEmail = async (email, code, username) => {
     console.log(`\n📤 Sending verification email to: ${email}`);
 
     // Try Brevo (HTTP API - works on Render!)
-    const sent = await sendWithBrevo(email, code, username);
+    const sent = await sendWithBrevo(email, code, username, 'verification');
     if (sent) return true;
 
     // Brevo failed - log the code for manual verification
@@ -64,4 +64,53 @@ const sendVerificationEmail = async (email, code, username) => {
     return true; // Return true so registration continues
 };
 
-module.exports = { sendVerificationEmail };
+// Password reset HTML template
+const getResetEmailHtml = (code, username) => `
+    <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #FFFEF7; border: 3px dashed #2D3142; border-radius: 20px;">
+        <h1 style="color: #FF6B9D; text-align: center; font-size: 28px;">🔐 Recuperar Contraseña</h1>
+        <p style="color: #2D3142; font-size: 16px;">Hola <strong>${username}</strong>,</p>
+        <p style="color: #2D3142; font-size: 16px;">Recibimos una solicitud para restablecer tu contraseña. Tu código de recuperación es:</p>
+        <div style="background: linear-gradient(135deg, #6366F1, #8B5CF6); padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: white;">${code}</span>
+        </div>
+        <p style="color: #888; font-size: 14px; text-align: center;">Este código expira en 15 minutos.</p>
+        <p style="color: #2D3142; font-size: 14px; text-align: center; margin-top: 30px;">Si no solicitaste este cambio, ignora este correo.</p>
+    </div>
+`;
+
+// Send password reset email
+const sendPasswordResetEmail = async (email, code, username) => {
+    console.log(`\n📤 Sending password reset email to: ${email}`);
+
+    const apiKey = process.env.BREVO_API_KEY;
+    const senderEmail = process.env.BREVO_SENDER || 'noreply@lorenotes.com';
+
+    if (!apiKey) {
+        console.log('⚠️ BREVO_API_KEY not configured');
+        console.log(`📧 RESET CODE for ${email}: ${code}`);
+        return true;
+    }
+
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+
+    const sendSmtpEmail = {
+        sender: { name: 'LoreNotes', email: senderEmail },
+        to: [{ email: email }],
+        subject: '🔐 LoreNotes - Recupera tu contraseña',
+        htmlContent: getResetEmailHtml(code, username)
+    };
+
+    try {
+        const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`✅ Reset email sent! MessageId: ${result.body?.messageId || 'sent'}`);
+        return true;
+    } catch (error) {
+        console.error(`❌ Brevo error: ${error.message}`);
+        console.log(`📧 RESET CODE for ${email}: ${code}`);
+        return true;
+    }
+};
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+
