@@ -1,37 +1,18 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Create Gmail transporter with explicit configuration
-const createTransporter = () => {
-    const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS;
-
-    console.log('📧 Email config:', {
-        user: user ? `${user.substring(0, 5)}...` : 'NOT SET',
-        pass: pass ? 'SET (hidden)' : 'NOT SET'
-    });
-
-    // Gmail configuration with explicit settings
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use TLS
-        auth: {
-            user: user,
-            pass: pass
-        },
-        tls: {
-            rejectUnauthorized: false
-        }
-    });
+// Initialize Resend with API key
+const getResend = () => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return null;
+    return new Resend(apiKey);
 };
 
 const sendVerificationEmail = async (email, code, username) => {
-    const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS;
+    const resend = getResend();
 
-    // If no email credentials configured, just log the code
-    if (!user || !pass) {
-        console.log('⚠️ Email credentials not configured');
+    // If no Resend API key, just log the code
+    if (!resend) {
+        console.log('⚠️ RESEND_API_KEY not configured');
         console.log('========================================');
         console.log(`📧 VERIFICATION CODE for ${email}`);
         console.log(`   Code: ${code}`);
@@ -39,44 +20,45 @@ const sendVerificationEmail = async (email, code, username) => {
         return true;
     }
 
-    console.log(`📤 Attempting to send email to: ${email}`);
-    console.log(`   From: ${user}`);
-
-    const transporter = createTransporter();
-
-    const mailOptions = {
-        from: `"LoreNotes" <${user}>`,
-        to: email,
-        subject: '🎨 LoreNotes - Verifica tu cuenta',
-        html: `
-            <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #FFFEF7; border: 3px dashed #2D3142; border-radius: 20px;">
-                <h1 style="color: #FF6B9D; text-align: center; font-size: 28px;">¡Bienvenido a LoreNotes! 🎨</h1>
-                <p style="color: #2D3142; font-size: 16px;">Hola <strong>${username}</strong>,</p>
-                <p style="color: #2D3142; font-size: 16px;">Tu código de verificación es:</p>
-                <div style="background: linear-gradient(135deg, #FF6B9D, #FEC180); padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0;">
-                    <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #2D3142;">${code}</span>
-                </div>
-                <p style="color: #888; font-size: 14px; text-align: center;">Este código expira en 15 minutos.</p>
-                <p style="color: #2D3142; font-size: 14px; text-align: center; margin-top: 30px;">¡Prepárate para crear cosas increíbles! ✨</p>
-            </div>
-        `
-    };
+    console.log(`📤 Sending email via Resend to: ${email}`);
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent successfully!`);
-        console.log(`   Message ID: ${info.messageId}`);
-        console.log(`   Response: ${info.response}`);
+        const { data, error } = await resend.emails.send({
+            from: 'LoreNotes <onboarding@resend.dev>',
+            to: email,
+            subject: '🎨 LoreNotes - Verifica tu cuenta',
+            html: `
+                <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #FFFEF7; border: 3px dashed #2D3142; border-radius: 20px;">
+                    <h1 style="color: #FF6B9D; text-align: center; font-size: 28px;">¡Bienvenido a LoreNotes! 🎨</h1>
+                    <p style="color: #2D3142; font-size: 16px;">Hola <strong>${username}</strong>,</p>
+                    <p style="color: #2D3142; font-size: 16px;">Tu código de verificación es:</p>
+                    <div style="background: linear-gradient(135deg, #FF6B9D, #FEC180); padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0;">
+                        <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #2D3142;">${code}</span>
+                    </div>
+                    <p style="color: #888; font-size: 14px; text-align: center;">Este código expira en 15 minutos.</p>
+                    <p style="color: #2D3142; font-size: 14px; text-align: center; margin-top: 30px;">¡Prepárate para crear cosas increíbles! ✨</p>
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error('❌ Resend error:', error);
+            console.log('========================================');
+            console.log(`📧 VERIFICATION CODE for ${email}`);
+            console.log(`   Code: ${code}`);
+            console.log('========================================');
+            return true;
+        }
+
+        console.log(`✅ Email sent successfully! ID: ${data.id}`);
         return true;
     } catch (error) {
         console.error('❌ Error sending email:', error.message);
-        console.error('   Full error:', error);
-        // Fallback: log the code if email fails
         console.log('========================================');
         console.log(`📧 VERIFICATION CODE for ${email}`);
         console.log(`   Code: ${code}`);
         console.log('========================================');
-        return true; // Still return true so registration continues
+        return true;
     }
 };
 
