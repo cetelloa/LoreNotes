@@ -1,5 +1,4 @@
-const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
+const SibApiV3Sdk = require('@getbrevo/brevo');
 
 // Email HTML template
 const getEmailHtml = (code, username) => `
@@ -15,88 +14,48 @@ const getEmailHtml = (code, username) => `
     </div>
 `;
 
-// Try Outlook/Hotmail SMTP
-const sendWithOutlook = async (email, code, username) => {
-    const user = process.env.OUTLOOK_USER;
-    const pass = process.env.OUTLOOK_PASS;
+// Send email using Brevo (HTTP API - not blocked by Render)
+const sendWithBrevo = async (email, code, username) => {
+    const apiKey = process.env.BREVO_API_KEY;
+    const senderEmail = process.env.BREVO_SENDER || 'noreply@lorenotes.com';
 
-    if (!user || !pass) return null;
-
-    console.log(`📧 Trying Outlook SMTP for: ${email}`);
-
-    const transporter = nodemailer.createTransport({
-        host: 'smtp-mail.outlook.com',
-        port: 587,
-        secure: false,
-        auth: { user, pass },
-        tls: {
-            ciphers: 'SSLv3',
-            rejectUnauthorized: false
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
-    });
-
-    try {
-        const info = await transporter.sendMail({
-            from: `"LoreNotes" <${user}>`,
-            to: email,
-            subject: '🎨 LoreNotes - Verifica tu cuenta',
-            html: getEmailHtml(code, username)
-        });
-        console.log(`✅ Email sent via Outlook! ID: ${info.messageId}`);
-        return true;
-    } catch (error) {
-        console.error(`❌ Outlook error: ${error.message}`);
-        return null;
-    }
-};
-
-// Try Resend API (HTTP-based, bypasses SMTP blocks)
-const sendWithResend = async (email, code, username) => {
-    const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) return null;
 
-    console.log(`📧 Trying Resend API for: ${email}`);
+    console.log(`📧 Sending via Brevo to: ${email}`);
 
-    const resend = new Resend(apiKey);
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+
+    const sendSmtpEmail = {
+        sender: { name: 'LoreNotes', email: senderEmail },
+        to: [{ email: email }],
+        subject: '🎨 LoreNotes - Verifica tu cuenta',
+        htmlContent: getEmailHtml(code, username)
+    };
 
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'LoreNotes <onboarding@resend.dev>',
-            to: email,
-            subject: '🎨 LoreNotes - Verifica tu cuenta',
-            html: getEmailHtml(code, username)
-        });
-
-        if (error) {
-            console.error(`❌ Resend error: ${error.message}`);
-            return null;
-        }
-
-        console.log(`✅ Email sent via Resend! ID: ${data.id}`);
+        const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`✅ Email sent via Brevo! MessageId: ${result.body?.messageId || 'sent'}`);
         return true;
     } catch (error) {
-        console.error(`❌ Resend error: ${error.message}`);
+        console.error(`❌ Brevo error: ${error.message}`);
+        if (error.body) {
+            console.error(`   Details: ${JSON.stringify(error.body)}`);
+        }
         return null;
     }
 };
 
-// Main function - tries multiple methods
+// Main function
 const sendVerificationEmail = async (email, code, username) => {
     console.log(`\n📤 Sending verification email to: ${email}`);
 
-    // Try Outlook first
-    let sent = await sendWithOutlook(email, code, username);
+    // Try Brevo (HTTP API - works on Render!)
+    const sent = await sendWithBrevo(email, code, username);
     if (sent) return true;
 
-    // Try Resend as fallback
-    sent = await sendWithResend(email, code, username);
-    if (sent) return true;
-
-    // All methods failed - log the code for manual verification
-    console.log('⚠️ All email methods failed. Logging code for manual use:');
+    // Brevo failed - log the code for manual verification
+    console.log('⚠️ Email sending failed. Logging code for manual use:');
     console.log('========================================');
     console.log(`📧 VERIFICATION CODE for ${email}`);
     console.log(`   Code: ${code}`);
