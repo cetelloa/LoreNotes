@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, DollarSign, Download, Eye } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
+import { useCart } from '../context/CartContext';
 
 interface Template {
     id: string;
@@ -20,6 +21,8 @@ export const TemplatesPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
+    const { addToCart, cart } = useCart();
 
     const categories = ['bodas', 'cumpleanos', 'negocios', 'educacion', 'otros'];
 
@@ -179,8 +182,29 @@ export const TemplatesPage = () => {
                                         <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" title="Ver detalles">
                                             <Eye size={18} />
                                         </button>
-                                        <button className="p-2 bg-primary-craft text-white rounded-lg hover:bg-primary-craft/80 transition-colors" title="Descargar">
-                                            <Download size={18} />
+                                        <button
+                                            onClick={async () => {
+                                                const inCart = cart.some(item => item.templateId === template.id);
+                                                if (inCart || addedToCart.has(template.id)) return;
+
+                                                const success = await addToCart({
+                                                    templateId: template.id,
+                                                    title: template.title,
+                                                    price: template.price
+                                                });
+                                                if (success) {
+                                                    setAddedToCart(prev => new Set([...prev, template.id]));
+                                                }
+                                            }}
+                                            className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-primary-craft text-white hover:bg-primary-craft/80'
+                                                }`}
+                                            title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
+                                        >
+                                            {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                                ? <Check size={18} />
+                                                : <ShoppingCart size={18} />}
                                         </button>
                                     </div>
                                 </div>

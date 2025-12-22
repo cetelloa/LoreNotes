@@ -36,6 +36,20 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    // Shopping cart
+    cart: [{
+        templateId: { type: String, required: true },
+        title: String,
+        price: Number,
+        addedAt: { type: Date, default: Date.now }
+    }],
+    // Purchased templates
+    purchasedTemplates: [{
+        templateId: { type: String, required: true },
+        title: String,
+        price: Number,
+        purchaseDate: { type: Date, default: Date.now }
+    }],
     createdAt: {
         type: Date,
         default: Date.now

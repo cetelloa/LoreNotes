@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Star, LogOut, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, Star, LogOut, User, Menu, X, Settings } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useState } from 'react';
 
 export const CraftHeader = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { isAuthenticated, user, logout } = useAuth();
+    const { cartCount } = useCart();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const menuItems = [
@@ -95,17 +97,33 @@ export const CraftHeader = () => {
                                 </Link>
                             )}
 
+                            {/* Account Link */}
+                            <Link to="/account">
+                                <motion.button
+                                    className="bg-gray-100 text-ink-black p-2 rounded-full border-2 border-ink-black"
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    title="Mi Cuenta"
+                                >
+                                    <Settings size={16} />
+                                </motion.button>
+                            </Link>
+
                             {/* Cart */}
-                            <motion.button
-                                className="relative bg-primary-craft text-white p-2 rounded-full border-2 border-ink-black"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                            >
-                                <ShoppingCart size={18} />
-                                <span className="absolute -top-1 -right-1 bg-success-green border border-ink-black text-ink-black text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                    0
-                                </span>
-                            </motion.button>
+                            <Link to="/cart">
+                                <motion.button
+                                    className="relative bg-primary-craft text-white p-2 rounded-full border-2 border-ink-black"
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <ShoppingCart size={18} />
+                                    {cartCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-success-green border border-ink-black text-ink-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                </motion.button>
+                            </Link>
 
                             {/* Logout */}
                             <motion.button
