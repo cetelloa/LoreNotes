@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 
 interface User {
     id: string;
@@ -24,10 +24,83 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Import centralized API URL
 import { AUTH_URL } from '../config';
 
+// Session timeout in milliseconds (30 minutes)
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [isLoading, setIsLoading] = useState(true);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const logout = useCallback(() => {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('lastActivity');
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+    }, []);
+
+    // Reset the inactivity timer
+    const resetActivityTimer = useCallback(() => {
+        if (!token) return;
+
+        localStorage.setItem('lastActivity', Date.now().toString());
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        timeoutRef.current = setTimeout(() => {
+            console.log('⏰ Session expired due to inactivity');
+            logout();
+            window.location.href = '/login?expired=true';
+        }, SESSION_TIMEOUT);
+    }, [token, logout]);
+
+    // Check if session expired on load
+    useEffect(() => {
+        const lastActivity = localStorage.getItem('lastActivity');
+        if (lastActivity && token) {
+            const elapsed = Date.now() - parseInt(lastActivity);
+            if (elapsed > SESSION_TIMEOUT) {
+                console.log('⏰ Session expired while away');
+                logout();
+                return;
+            }
+        }
+
+        if (token) {
+            resetActivityTimer();
+        }
+    }, [token, resetActivityTimer, logout]);
+
+    // Listen for user activity
+    useEffect(() => {
+        if (!token) return;
+
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
+        const handleActivity = () => {
+            resetActivityTimer();
+        };
+
+        events.forEach(event => {
+            window.addEventListener(event, handleActivity);
+        });
+
+        return () => {
+            events.forEach(event => {
+                window.removeEventListener(event, handleActivity);
+            });
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, [token, resetActivityTimer]);
 
     // Fetch fresh user data from the server
     const refreshUser = async () => {
@@ -47,6 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setUser(userData);
                 setToken(storedToken);
                 localStorage.setItem('user', JSON.stringify(userData));
+                resetActivityTimer();
             } else {
                 // Token invalid, clear everything
                 logout();
@@ -77,6 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const data = await response.json();
             setToken(data.token);
             localStorage.setItem('token', data.token);
+            localStorage.setItem('lastActivity', Date.now().toString());
 
             // Immediately fetch fresh user data after login
             const meResponse = await fetch(`${AUTH_URL}/me`, {
@@ -92,6 +167,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 localStorage.setItem('user', JSON.stringify(data.user));
             }
 
+            resetActivityTimer();
             return true;
         } catch (error) {
             console.error('Login error:', error);
@@ -121,13 +197,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.error('Register error:', error);
             return false;
         }
-    };
-
-    const logout = () => {
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     return (
