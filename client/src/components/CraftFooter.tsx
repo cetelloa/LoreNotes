@@ -1,3 +1,16 @@
+import { Instagram, Music2, Facebook, Twitter, Youtube, Mail } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// Configure your social media links here
+const socialLinks = [
+    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/lorenotes', color: '#E4405F' },
+    { name: 'TikTok', icon: Music2, url: 'https://tiktok.com/@lorenotes', color: '#000000' },
+    { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/lorenotes', color: '#1877F2' },
+    { name: 'Twitter/X', icon: Twitter, url: 'https://x.com/lorenotes', color: '#1DA1F2' },
+    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/@lorenotes', color: '#FF0000' },
+    { name: 'Email', icon: Mail, url: 'mailto:contacto@lorenotes.com', color: '#FF6B9D' },
+];
+
 export const CraftFooter = () => {
     return (
         <footer className="relative mt-20 bg-ink-black text-paper-white pt-16 pb-8 px-8">
@@ -6,13 +19,13 @@ export const CraftFooter = () => {
                 className="absolute -top-6 left-0 right-0 h-8 shadow-sm transform -rotate-1"
                 style={{
                     background: `repeating-linear-gradient(
-              45deg,
-              rgba(255, 107, 157, 0.9) 0px,
-              rgba(255, 107, 157, 0.9) 20px,
-              rgba(254, 193, 128, 0.9) 20px,
-              rgba(254, 193, 128, 0.9) 40px
-            )`,
-                    clipPath: 'polygon(0% 0%, 100% 2%, 100% 100%, 0% 98%)' // Irregular edges
+                        45deg,
+                        rgba(255, 107, 157, 0.9) 0px,
+                        rgba(255, 107, 157, 0.9) 20px,
+                        rgba(254, 193, 128, 0.9) 20px,
+                        rgba(254, 193, 128, 0.9) 40px
+                    )`,
+                    clipPath: 'polygon(0% 0%, 100% 2%, 100% 100%, 0% 98%)'
                 }}
             />
 
@@ -39,9 +52,25 @@ export const CraftFooter = () => {
                 {/* Social */}
                 <div className="space-y-4">
                     <h3 className="text-xl font-heading text-accent-craft">Síguenos</h3>
-                    <p className="font-handwriting text-xl text-gray-400">
+                    <p className="font-body text-gray-400 text-sm">
                         ¡Compartimos inspiración diaria en nuestras redes! 🎨
                     </p>
+                    <div className="flex flex-wrap gap-3">
+                        {socialLinks.map((social) => (
+                            <motion.a
+                                key={social.name}
+                                href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-3 bg-gray-800 rounded-xl border-2 border-gray-700 hover:border-gray-500 transition-all"
+                                whileHover={{ scale: 1.1, backgroundColor: social.color }}
+                                whileTap={{ scale: 0.95 }}
+                                title={social.name}
+                            >
+                                <social.icon size={20} className="text-white" />
+                            </motion.a>
+                        ))}
+                    </div>
                 </div>
             </div>
 
