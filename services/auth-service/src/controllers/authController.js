@@ -17,10 +17,33 @@ exports.register = async (req, res) => {
 
         // Check if user exists
         let existingUser = await User.findOne({ email });
+
         if (existingUser) {
+            // If user exists but is NOT verified, resend verification code
+            if (!existingUser.isVerified) {
+                // Update password in case they want to use a new one
+                existingUser.password = password;
+                existingUser.username = username;
+
+                // Generate new verification code
+                const verificationCode = existingUser.generateVerificationCode();
+                await existingUser.save();
+
+                // Resend verification email
+                await sendVerificationEmail(email, verificationCode, username);
+
+                return res.status(200).json({
+                    message: 'Código de verificación reenviado. Revisa tu email.',
+                    requiresVerification: true,
+                    email: email
+                });
+            }
+
+            // User exists AND is verified - cannot register again
             return res.status(400).json({ message: 'El usuario ya existe' });
         }
 
+        // Create new user
         const user = new User({
             username,
             email,
