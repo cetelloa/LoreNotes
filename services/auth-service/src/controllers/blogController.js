@@ -8,8 +8,8 @@ const verifyAdmin = async (req, res, next) => {
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) return res.status(401).json({ message: 'No autorizado' });
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'crafthub-secret-key');
-        const user = await User.findById(decoded.userId);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_12345');
+        const user = await User.findById(decoded.id);
 
         if (!user || user.role !== 'admin') {
             return res.status(403).json({ message: 'Acceso denegado' });
@@ -30,8 +30,8 @@ const getAllPosts = async (req, res) => {
 
         if (token) {
             try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'crafthub-secret-key');
-                const user = await User.findById(decoded.userId);
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_12345');
+                const user = await User.findById(decoded.id);
                 isAdmin = user?.role === 'admin';
             } catch { }
         }
