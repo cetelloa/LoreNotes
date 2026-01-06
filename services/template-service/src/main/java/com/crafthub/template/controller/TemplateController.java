@@ -108,6 +108,7 @@ public class TemplateController {
             @RequestParam("author") String author,
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "tags", required = false) List<String> tags,
+            @RequestParam(value = "tutorialVideoUrl", required = false) String tutorialVideoUrl,
             @RequestParam("image") MultipartFile imageFile,
             @RequestParam("templateFile") MultipartFile templateFile) {
         try {
@@ -140,6 +141,7 @@ public class TemplateController {
             template.setRating(0);
             template.setDownloadCount(0);
             template.setIsActive(true);
+            template.setTutorialVideoUrl(tutorialVideoUrl);
             template.setCreatedAt(LocalDateTime.now());
             template.setUpdatedAt(LocalDateTime.now());
 
@@ -160,6 +162,7 @@ public class TemplateController {
             @RequestParam(value = "purpose", required = false) String purpose,
             @RequestParam(value = "price", required = false) Double price,
             @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "tutorialVideoUrl", required = false) String tutorialVideoUrl,
             @RequestParam(value = "image", required = false) MultipartFile imageFile,
             @RequestParam(value = "templateFile", required = false) MultipartFile templateFile) {
         try {
@@ -180,6 +183,8 @@ public class TemplateController {
                 template.setPrice(price);
             if (category != null)
                 template.setCategory(category);
+            if (tutorialVideoUrl != null)
+                template.setTutorialVideoUrl(tutorialVideoUrl);
 
             // Update image if provided
             if (imageFile != null && !imageFile.isEmpty()) {
