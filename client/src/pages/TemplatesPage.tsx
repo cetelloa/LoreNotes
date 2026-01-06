@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, Play, X } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 import { useCart } from '../context/CartContext';
 
@@ -181,16 +181,20 @@ export const TemplatesPage = () => {
                                         <span>{(template.price || 0).toFixed(2)}</span>
                                     </div>
                                     <div className="flex gap-2">
-                                        {template.tutorialVideoUrl && (
-                                            <button
-                                                onClick={() => setVideoModal({ isOpen: true, url: template.tutorialVideoUrl!, title: template.title })}
-                                                className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-                                                title="Ver tutorial"
-                                            >
-                                                <Play size={18} />
-                                            </button>
-                                        )}
-                                        <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" title="Ver detalles">
+                                        <button
+                                            onClick={() => {
+                                                if (template.tutorialVideoUrl) {
+                                                    setVideoModal({ isOpen: true, url: template.tutorialVideoUrl, title: template.title });
+                                                } else {
+                                                    alert('Esta plantilla aún no tiene video tutorial disponible.');
+                                                }
+                                            }}
+                                            className={`p-2 rounded-lg transition-colors ${template.tutorialVideoUrl
+                                                ? 'bg-purple-500 text-white hover:bg-purple-600'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
+                                                }`}
+                                            title={template.tutorialVideoUrl ? 'Ver tutorial' : 'Sin tutorial disponible'}
+                                        >
                                             <Eye size={18} />
                                         </button>
                                         <button
