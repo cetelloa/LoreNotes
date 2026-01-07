@@ -180,25 +180,27 @@ export const TemplatesPage = () => {
                                         <DollarSign size={16} />
                                         <span>{(template.price || 0).toFixed(2)}</span>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 relative z-10">
                                         <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 if (template.tutorialVideoUrl) {
                                                     setVideoModal({ isOpen: true, url: template.tutorialVideoUrl, title: template.title });
                                                 } else {
                                                     alert('Esta plantilla aún no tiene video tutorial disponible.');
                                                 }
                                             }}
-                                            className={`p-2 rounded-lg transition-colors ${template.tutorialVideoUrl
-                                                ? 'bg-purple-500 text-white hover:bg-purple-600'
+                                            className={`p-3 rounded-lg transition-colors ${template.tutorialVideoUrl
+                                                ? 'bg-purple-500 text-white hover:bg-purple-600 active:bg-purple-700'
                                                 : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
                                                 }`}
                                             title={template.tutorialVideoUrl ? 'Ver tutorial' : 'Sin tutorial disponible'}
                                         >
-                                            <Eye size={18} />
+                                            <Eye size={20} />
                                         </button>
                                         <button
-                                            onClick={async () => {
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
                                                 const inCart = cart.some(item => item.templateId === template.id);
                                                 if (inCart || addedToCart.has(template.id)) return;
 
@@ -211,15 +213,15 @@ export const TemplatesPage = () => {
                                                     setAddedToCart(prev => new Set([...prev, template.id]));
                                                 }
                                             }}
-                                            className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                            className={`p-3 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
                                                 ? 'bg-green-500 text-white'
-                                                : 'bg-primary-craft text-white hover:bg-primary-craft/80'
+                                                : 'bg-primary-craft text-white hover:bg-primary-craft/80 active:bg-primary-craft/90'
                                                 }`}
                                             title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
                                         >
                                             {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                ? <Check size={18} />
-                                                : <ShoppingCart size={18} />}
+                                                ? <Check size={20} />
+                                                : <ShoppingCart size={20} />}
                                         </button>
                                     </div>
                                 </div>
