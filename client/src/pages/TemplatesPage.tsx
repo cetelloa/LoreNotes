@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +26,7 @@ export const TemplatesPage = () => {
     const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
     const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
+    const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; template: Template | null }>({ isOpen: false, template: null });
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
 
@@ -206,17 +207,10 @@ export const TemplatesPage = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (template.tutorialVideoUrl) {
-                                                    setVideoModal({ isOpen: true, url: template.tutorialVideoUrl, title: template.title });
-                                                } else {
-                                                    alert('Esta plantilla aún no tiene video tutorial disponible.');
-                                                }
+                                                setPreviewModal({ isOpen: true, template });
                                             }}
-                                            className={`p-3 rounded-lg transition-colors ${template.tutorialVideoUrl
-                                                ? 'bg-purple-500 text-white hover:bg-purple-600 active:bg-purple-700'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
-                                                }`}
-                                            title={template.tutorialVideoUrl ? 'Ver tutorial' : 'Sin tutorial disponible'}
+                                            className="p-3 rounded-lg bg-purple-500 text-white hover:bg-purple-600 active:bg-purple-700 transition-colors"
+                                            title="Ver vista previa"
                                         >
                                             <Eye size={20} />
                                         </button>
@@ -282,6 +276,88 @@ export const TemplatesPage = () => {
                     ))}
                 </div>
             )}
+
+            {/* Template Preview Modal */}
+            <AnimatePresence>
+                {previewModal.isOpen && previewModal.template && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        onClick={() => setPreviewModal({ isOpen: false, template: null })}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border-4 border-ink-black overflow-hidden"
+                        >
+                            {/* Image */}
+                            <div className="relative h-48 md:h-56 bg-gray-100">
+                                <img
+                                    src={getTemplateImageUrl(previewModal.template.imageFileId)}
+                                    alt={previewModal.template.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop';
+                                    }}
+                                />
+                                <button
+                                    onClick={() => setPreviewModal({ isOpen: false, template: null })}
+                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                                <div className="absolute bottom-3 left-3 bg-accent-craft text-ink-black text-sm font-bold px-3 py-1 rounded-full border-2 border-ink-black">
+                                    {getCategoryLabel(previewModal.template.category)}
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6">
+                                <h3 className="font-heading font-bold text-2xl text-ink-black mb-2">
+                                    {previewModal.template.title}
+                                </h3>
+                                <p className="text-gray-600 mb-4 line-clamp-3">
+                                    {previewModal.template.description || previewModal.template.purpose || 'Plantilla de diseño creativo para tus proyectos.'}
+                                </p>
+
+                                {/* Price */}
+                                <div className="flex items-center gap-2 mb-6">
+                                    <DollarSign size={24} className="text-primary-craft" />
+                                    <span className="text-3xl font-bold text-primary-craft">
+                                        {(previewModal.template.price || 0).toFixed(2)}
+                                    </span>
+                                </div>
+
+                                {/* Tutorial Button */}
+                                {previewModal.template.tutorialVideoUrl ? (
+                                    <button
+                                        onClick={() => {
+                                            setVideoModal({
+                                                isOpen: true,
+                                                url: previewModal.template!.tutorialVideoUrl!,
+                                                title: previewModal.template!.title
+                                            });
+                                            setPreviewModal({ isOpen: false, template: null });
+                                        }}
+                                        className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-heading hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Play size={20} />
+                                        Ver Tutorial
+                                    </button>
+                                ) : (
+                                    <p className="text-center text-gray-400 text-sm">
+                                        📹 Tutorial próximamente disponible
+                                    </p>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Video Tutorial Modal */}
             <AnimatePresence>
