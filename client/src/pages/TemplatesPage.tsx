@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X } from 'lucide-react';
-import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download } from 'lucide-react';
+import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 interface Template {
     id: string;
@@ -23,14 +24,19 @@ export const TemplatesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
+    const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const { addToCart, cart } = useCart();
+    const { token, isAuthenticated } = useAuth();
 
     const categories = ['bodas', 'cumpleanos', 'negocios', 'educacion', 'otros'];
 
     useEffect(() => {
         fetchTemplates();
-    }, []);
+        if (isAuthenticated) {
+            fetchPurchases();
+        }
+    }, [isAuthenticated]);
 
     const fetchTemplates = async () => {
         try {
@@ -41,6 +47,22 @@ export const TemplatesPage = () => {
             console.error('Error fetching templates:', error);
         }
         setLoading(false);
+    };
+
+    const fetchPurchases = async () => {
+        if (!token) return;
+        try {
+            const res = await fetch(`${AUTH_URL}/purchases`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const ids = new Set<string>(data.purchases?.map((p: { templateId: string }) => p.templateId) || []);
+                setPurchasedIds(ids);
+            }
+        } catch (error) {
+            console.error('Error fetching purchases:', error);
+        }
     };
 
     const filteredTemplates = templates.filter(t => {
@@ -198,49 +220,61 @@ export const TemplatesPage = () => {
                                         >
                                             <Eye size={20} />
                                         </button>
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
+                                        {purchasedIds.has(template.id) ? (
+                                            // Already purchased - show download button
+                                            <a
+                                                href={`${TEMPLATES_URL}/${template.id}/download`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="p-3 rounded-lg bg-green-500 text-white hover:bg-green-600 active:bg-green-700 transition-colors flex items-center gap-1"
+                                                title="Descargar plantilla"
+                                                download
+                                            >
+                                                <Download size={20} />
+                                            </a>
+                                        ) : (
+                                            // Not purchased - show cart button
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
 
-                                                // Validate template data
-                                                if (!template.id) {
-                                                    alert(`Error: Esta plantilla "${template.title}" no tiene un ID válido. Contacta al administrador.`);
-                                                    console.error('Template missing ID:', template);
-                                                    return;
-                                                }
-
-                                                const inCart = cart.some(item => item.templateId === template.id);
-                                                if (inCart || addedToCart.has(template.id)) {
-                                                    alert('Esta plantilla ya está en tu carrito.');
-                                                    return;
-                                                }
-
-                                                try {
-                                                    const result = await addToCart({
-                                                        templateId: template.id,
-                                                        title: template.title,
-                                                        price: template.price || 0
-                                                    });
-                                                    if (result.success) {
-                                                        setAddedToCart(prev => new Set([...prev, template.id]));
-                                                    } else {
-                                                        alert(result.message || 'No se pudo agregar al carrito.');
+                                                    if (!template.id) {
+                                                        alert(`Error: Esta plantilla "${template.title}" no tiene un ID válido.`);
+                                                        return;
                                                     }
-                                                } catch (error) {
-                                                    console.error('Error adding to cart:', error);
-                                                    alert('Error de conexión. Verifica tu internet e intenta de nuevo.');
-                                                }
-                                            }}
-                                            className={`p-3 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-primary-craft text-white hover:bg-primary-craft/80 active:bg-primary-craft/90'
-                                                }`}
-                                            title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
-                                        >
-                                            {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                ? <Check size={20} />
-                                                : <ShoppingCart size={20} />}
-                                        </button>
+
+                                                    const inCart = cart.some(item => item.templateId === template.id);
+                                                    if (inCart || addedToCart.has(template.id)) {
+                                                        alert('Esta plantilla ya está en tu carrito.');
+                                                        return;
+                                                    }
+
+                                                    try {
+                                                        const result = await addToCart({
+                                                            templateId: template.id,
+                                                            title: template.title,
+                                                            price: template.price || 0
+                                                        });
+                                                        if (result.success) {
+                                                            setAddedToCart(prev => new Set([...prev, template.id]));
+                                                        } else {
+                                                            alert(result.message || 'No se pudo agregar al carrito.');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error adding to cart:', error);
+                                                        alert('Error de conexión.');
+                                                    }
+                                                }}
+                                                className={`p-3 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-primary-craft text-white hover:bg-primary-craft/80 active:bg-primary-craft/90'
+                                                    }`}
+                                                title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
+                                            >
+                                                {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                                    ? <Check size={20} />
+                                                    : <ShoppingCart size={20} />}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
