@@ -19,36 +19,35 @@ export const CreativeBackground = () => {
     useEffect(() => {
         // Generate more random elements with variety
         const types: CraftElement['type'][] = ['scissors', 'brush', 'ruler', 'palette', 'pencil', 'thread', 'star', 'heart', 'sparkle', 'flower', 'bookmark', 'gift', 'crown', 'shapes'];
-        const generated = Array.from({ length: 35 }, (_, i) => ({
+        const generated = Array.from({ length: 55 }, (_, i) => ({
             id: i,
             type: types[Math.floor(Math.random() * types.length)],
             x: Math.random() * 100,
             y: Math.random() * 100,
             rotation: Math.random() * 360,
-            scale: 0.4 + Math.random() * 0.8,
-            duration: 12 + Math.random() * 25,
-            size: 32 + Math.floor(Math.random() * 40),
+            scale: 0.5 + Math.random() * 1,
+            duration: 10 + Math.random() * 30,
+            size: 48 + Math.floor(Math.random() * 48),
         }));
         setElements(generated);
     }, []);
 
     const getIcon = (type: string, size: number) => {
-        const iconProps = { size, className: "opacity-15" };
         switch (type) {
-            case 'scissors': return <Scissors {...iconProps} className="text-primary-craft opacity-15" />;
-            case 'brush': return <Paintbrush {...iconProps} className="text-secondary-craft opacity-15" />;
-            case 'ruler': return <Ruler {...iconProps} className="text-accent-craft opacity-15" />;
-            case 'palette': return <Palette {...iconProps} className="text-craft-purple opacity-15" />;
-            case 'pencil': return <PenTool {...iconProps} className="text-wood-brown opacity-15" />;
-            case 'star': return <Star {...iconProps} className="text-warning-yellow opacity-20" />;
-            case 'heart': return <Heart {...iconProps} className="text-primary-craft opacity-15" />;
-            case 'sparkle': return <Sparkles {...iconProps} className="text-accent-craft opacity-20" />;
-            case 'flower': return <Flower2 {...iconProps} className="text-secondary-craft opacity-15" />;
-            case 'bookmark': return <Bookmark {...iconProps} className="text-craft-purple opacity-15" />;
-            case 'gift': return <Gift {...iconProps} className="text-primary-craft opacity-20" />;
-            case 'crown': return <Crown {...iconProps} className="text-warning-yellow opacity-15" />;
-            case 'shapes': return <Shapes {...iconProps} className="text-craft-blue opacity-15" />;
-            default: return <Hash {...iconProps} className="text-craft-blue opacity-15" />;
+            case 'scissors': return <Scissors size={size} className="text-primary-craft opacity-30" />;
+            case 'brush': return <Paintbrush size={size} className="text-secondary-craft opacity-30" />;
+            case 'ruler': return <Ruler size={size} className="text-accent-craft opacity-30" />;
+            case 'palette': return <Palette size={size} className="text-craft-purple opacity-30" />;
+            case 'pencil': return <PenTool size={size} className="text-wood-brown opacity-30" />;
+            case 'star': return <Star size={size} className="text-warning-yellow opacity-35" />;
+            case 'heart': return <Heart size={size} className="text-primary-craft opacity-30" />;
+            case 'sparkle': return <Sparkles size={size} className="text-accent-craft opacity-35" />;
+            case 'flower': return <Flower2 size={size} className="text-secondary-craft opacity-30" />;
+            case 'bookmark': return <Bookmark size={size} className="text-craft-purple opacity-30" />;
+            case 'gift': return <Gift size={size} className="text-primary-craft opacity-35" />;
+            case 'crown': return <Crown size={size} className="text-warning-yellow opacity-30" />;
+            case 'shapes': return <Shapes size={size} className="text-craft-blue opacity-30" />;
+            default: return <Hash size={size} className="text-craft-blue opacity-30" />;
         }
     };
 
