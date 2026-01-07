@@ -1,44 +1,54 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Scissors, Paintbrush, Ruler, Palette, PenTool, Hash } from 'lucide-react';
+import { Scissors, Paintbrush, Ruler, Palette, PenTool, Hash, Star, Heart, Sparkles, Flower2, Bookmark, Gift, Crown, Shapes } from 'lucide-react';
 
 interface CraftElement {
     id: number;
-    type: 'scissors' | 'brush' | 'ruler' | 'palette' | 'pencil' | 'thread';
+    type: 'scissors' | 'brush' | 'ruler' | 'palette' | 'pencil' | 'thread' | 'star' | 'heart' | 'sparkle' | 'flower' | 'bookmark' | 'gift' | 'crown' | 'shapes';
     x: number;
     y: number;
     rotation: number;
     scale: number;
     duration: number;
+    size: number;
 }
 
 export const CreativeBackground = () => {
     const [elements, setElements] = useState<CraftElement[]>([]);
 
     useEffect(() => {
-        // Generate random elements
-        const generated = Array.from({ length: 15 }, (_, i) => ({
+        // Generate more random elements with variety
+        const types: CraftElement['type'][] = ['scissors', 'brush', 'ruler', 'palette', 'pencil', 'thread', 'star', 'heart', 'sparkle', 'flower', 'bookmark', 'gift', 'crown', 'shapes'];
+        const generated = Array.from({ length: 35 }, (_, i) => ({
             id: i,
-            type: ['scissors', 'brush', 'ruler', 'palette', 'pencil', 'thread'][
-                Math.floor(Math.random() * 6)
-            ] as CraftElement['type'],
+            type: types[Math.floor(Math.random() * types.length)],
             x: Math.random() * 100,
             y: Math.random() * 100,
             rotation: Math.random() * 360,
-            scale: 0.5 + Math.random() * 0.5,
-            duration: 15 + Math.random() * 20,
+            scale: 0.4 + Math.random() * 0.8,
+            duration: 12 + Math.random() * 25,
+            size: 32 + Math.floor(Math.random() * 40),
         }));
         setElements(generated);
     }, []);
 
-    const getIcon = (type: string) => {
+    const getIcon = (type: string, size: number) => {
+        const iconProps = { size, className: "opacity-15" };
         switch (type) {
-            case 'scissors': return <Scissors className="text-primary-craft opacity-20" size={48} />;
-            case 'brush': return <Paintbrush className="text-secondary-craft opacity-20" size={48} />;
-            case 'ruler': return <Ruler className="text-accent-craft opacity-20" size={48} />;
-            case 'palette': return <Palette className="text-craft-purple opacity-20" size={48} />;
-            case 'pencil': return <PenTool className="text-wood-brown opacity-20" size={48} />;
-            default: return <Hash className="text-craft-blue opacity-20" size={48} />;
+            case 'scissors': return <Scissors {...iconProps} className="text-primary-craft opacity-15" />;
+            case 'brush': return <Paintbrush {...iconProps} className="text-secondary-craft opacity-15" />;
+            case 'ruler': return <Ruler {...iconProps} className="text-accent-craft opacity-15" />;
+            case 'palette': return <Palette {...iconProps} className="text-craft-purple opacity-15" />;
+            case 'pencil': return <PenTool {...iconProps} className="text-wood-brown opacity-15" />;
+            case 'star': return <Star {...iconProps} className="text-warning-yellow opacity-20" />;
+            case 'heart': return <Heart {...iconProps} className="text-primary-craft opacity-15" />;
+            case 'sparkle': return <Sparkles {...iconProps} className="text-accent-craft opacity-20" />;
+            case 'flower': return <Flower2 {...iconProps} className="text-secondary-craft opacity-15" />;
+            case 'bookmark': return <Bookmark {...iconProps} className="text-craft-purple opacity-15" />;
+            case 'gift': return <Gift {...iconProps} className="text-primary-craft opacity-20" />;
+            case 'crown': return <Crown {...iconProps} className="text-warning-yellow opacity-15" />;
+            case 'shapes': return <Shapes {...iconProps} className="text-craft-blue opacity-15" />;
+            default: return <Hash {...iconProps} className="text-craft-blue opacity-15" />;
         }
     };
 
@@ -65,7 +75,7 @@ export const CreativeBackground = () => {
                         ease: "easeInOut",
                     }}
                 >
-                    {getIcon(el.type)}
+                    {getIcon(el.type, el.size)}
                 </motion.div>
             ))}
 

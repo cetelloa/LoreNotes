@@ -1,0 +1,127 @@
+================================================================================
+                    ARQUITECTURA DE LORENOTES - EXPLICACIÓN RÁPIDA
+================================================================================
+
+RESUMEN:
+LoreNotes es una tienda de plantillas de diseño con arquitectura de microservicios.
+El frontend está en Vercel, los backends en Render.com, y la base de datos en MongoDB Atlas.
+
+================================================================================
+                               SERVICIOS
+================================================================================
+
+1. FRONTEND (React)
+   - Ubicación: Vercel
+   - URL: lore-notes.vercel.app
+   - Lenguaje: TypeScript
+   - Framework: React + Vite
+   - Estilos: Tailwind CSS
+   - Animaciones: Framer Motion
+   
+2. AUTH SERVICE (Autenticación y Usuarios)
+   - Ubicación: Render.com
+   - Lenguaje: JavaScript (Node.js)
+   - Framework: Express.js
+   - Funciones: Login, registro, carrito, compras, blog, verificación email
+   - Librerías: mongoose, jsonwebtoken, bcryptjs, sib-api-v3-sdk (Brevo email)
+
+3. TEMPLATE SERVICE (Plantillas)
+   - Ubicación: Render.com
+   - Lenguaje: Java 17
+   - Framework: Spring Boot 3
+   - Funciones: CRUD de plantillas, subida de archivos, descarga
+   - Almacenamiento: GridFS (archivos dentro de MongoDB)
+
+4. CHATBOT SERVICE (Asistente IA)
+   - Ubicación: Render.com
+   - Lenguaje: JavaScript (Node.js)
+   - Framework: Express.js
+   - IA: Google Gemini AI
+   - Funciones: Chat inteligente, busqueda de plantillas, conversación
+
+5. BASE DE DATOS
+   - Ubicación: MongoDB Atlas (nube de Google)
+   - Tipo: NoSQL (documentos JSON)
+   - Colecciones: users, templates, blogposts
+
+================================================================================
+                          CÓMO SE COMUNICAN
+================================================================================
+
+Usuario <---> Frontend (Vercel)
+                 |
+                 | (HTTP/REST API con JSON)
+                 |
+    +------------+------------+------------+
+    |            |            |            |
+Auth Service  Templates   Chatbot      MongoDB
+(Node.js)    (Java)      (Node.js)    Atlas
+    |            |            |            |
+    +------------+------------+------------+
+                 |
+          Base de Datos
+
+- El frontend hace peticiones HTTP a los servicios backend
+- Los servicios consultan MongoDB para datos
+- La autenticación usa JWT (tokens en cada petición)
+
+================================================================================
+                        LIBRERÍAS PRINCIPALES
+================================================================================
+
+FRONTEND:
+- react, react-dom (UI)
+- react-router-dom (navegación)
+- framer-motion (animaciones)
+- lucide-react (iconos)
+- tailwindcss (estilos)
+
+AUTH SERVICE (Node.js):
+- express (servidor web)
+- mongoose (conexión MongoDB)
+- jsonwebtoken (tokens JWT)
+- bcryptjs (encriptación passwords)
+- sib-api-v3-sdk (envío de emails via Brevo)
+
+TEMPLATE SERVICE (Java):
+- spring-boot-starter-web (API REST)
+- spring-boot-starter-data-mongodb (conexión MongoDB)
+- lombok (reducir código repetitivo)
+
+CHATBOT SERVICE (Node.js):
+- express (servidor web)
+- mongoose (conexión MongoDB)
+- @google/generative-ai (Google Gemini IA)
+
+================================================================================
+                           DESPLIEGUE
+================================================================================
+
+- GitHub: Repositorio central del código
+- Vercel: Auto-deploy del frontend cuando hay push a main
+- Render: Auto-deploy de los 3 backends cuando hay push a main
+- MongoDB Atlas: Base de datos siempre disponible en la nube
+
+================================================================================
+                         VARIABLES DE ENTORNO
+================================================================================
+
+AUTH SERVICE requiere:
+- MONGO_URI (conexión a MongoDB Atlas)
+- JWT_SECRET (clave para tokens)
+- BREVO_API_KEY (envío de emails)
+
+TEMPLATE SERVICE requiere:
+- SPRING_DATA_MONGODB_URI (conexión a MongoDB Atlas)
+
+CHATBOT SERVICE requiere:
+- MONGO_URI (conexión a MongoDB Atlas)
+- GEMINI_API_KEY (API de Google para IA)
+
+FRONTEND requiere (en Vercel):
+- VITE_AUTH_URL
+- VITE_TEMPLATES_URL
+- VITE_CHATBOT_URL
+- VITE_BLOG_URL
+
+================================================================================
