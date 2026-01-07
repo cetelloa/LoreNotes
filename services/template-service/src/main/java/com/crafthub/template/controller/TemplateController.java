@@ -97,6 +97,38 @@ public class TemplateController {
         }
     }
 
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<byte[]> previewTemplate(@PathVariable String id) {
+        try {
+            Optional<Template> templateOpt = templateRepository.findById(id);
+            if (templateOpt.isEmpty() || templateOpt.get().getTemplateFileId() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Template template = templateOpt.get();
+            byte[] fileData = fileStorageService.getFile(template.getTemplateFileId());
+
+            // Determine content type based on file format
+            MediaType mediaType = MediaType.APPLICATION_PDF;
+            String fileFormat = template.getFileFormat();
+            if (fileFormat != null) {
+                if (fileFormat.toLowerCase().contains("png")) {
+                    mediaType = MediaType.IMAGE_PNG;
+                } else if (fileFormat.toLowerCase().contains("jpg") || fileFormat.toLowerCase().contains("jpeg")) {
+                    mediaType = MediaType.IMAGE_JPEG;
+                }
+            }
+
+            // Serve for inline viewing (not download)
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + template.getFileName() + "\"")
+                    .contentType(mediaType)
+                    .body(fileData);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ========== ADMIN ENDPOINTS ==========
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

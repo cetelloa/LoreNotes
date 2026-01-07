@@ -292,21 +292,18 @@ export const TemplatesPage = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border-4 border-ink-black overflow-hidden"
+                            className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border-4 border-ink-black overflow-hidden max-h-[90vh] flex flex-col"
                         >
-                            {/* Image */}
-                            <div className="relative h-48 md:h-56 bg-gray-100">
-                                <img
-                                    src={getTemplateImageUrl(previewModal.template.imageFileId)}
-                                    alt={previewModal.template.title}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop';
-                                    }}
+                            {/* PDF Preview */}
+                            <div className="relative h-64 md:h-80 bg-gray-200">
+                                <iframe
+                                    src={`${TEMPLATES_URL}/${previewModal.template.id}/preview`}
+                                    className="w-full h-full border-0"
+                                    title={`Vista previa de ${previewModal.template.title}`}
                                 />
                                 <button
                                     onClick={() => setPreviewModal({ isOpen: false, template: null })}
-                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors"
+                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-10"
                                 >
                                     <X size={20} />
                                 </button>
