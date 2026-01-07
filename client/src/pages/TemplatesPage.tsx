@@ -216,15 +216,15 @@ export const TemplatesPage = () => {
                                                 }
 
                                                 try {
-                                                    const success = await addToCart({
+                                                    const result = await addToCart({
                                                         templateId: template.id,
                                                         title: template.title,
                                                         price: template.price || 0
                                                     });
-                                                    if (success) {
+                                                    if (result.success) {
                                                         setAddedToCart(prev => new Set([...prev, template.id]));
                                                     } else {
-                                                        alert('No se pudo agregar al carrito. Intenta de nuevo.');
+                                                        alert(result.message || 'No se pudo agregar al carrito.');
                                                     }
                                                 } catch (error) {
                                                     console.error('Error adding to cart:', error);

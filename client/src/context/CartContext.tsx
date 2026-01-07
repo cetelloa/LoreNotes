@@ -12,7 +12,7 @@ interface CartItem {
 interface CartContextType {
     cart: CartItem[];
     cartCount: number;
-    addToCart: (item: CartItem) => Promise<boolean>;
+    addToCart: (item: CartItem) => Promise<{ success: boolean; message?: string }>;
     removeFromCart: (templateId: string) => Promise<boolean>;
     checkout: () => Promise<{ success: boolean; message: string }>;
     refreshCart: () => Promise<void>;
@@ -50,8 +50,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [isAuthenticated, token]);
 
-    const addToCart = async (item: CartItem): Promise<boolean> => {
-        if (!token) return false;
+    const addToCart = async (item: CartItem): Promise<{ success: boolean; message?: string }> => {
+        if (!token) return { success: false, message: 'No autenticado' };
         setIsLoading(true);
 
         try {
@@ -64,15 +64,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 body: JSON.stringify(item)
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                const data = await response.json();
                 setCart(data.cart || []);
-                return true;
+                return { success: true };
             }
-            return false;
+            return { success: false, message: data.message || 'Error desconocido' };
         } catch (error) {
             console.error('Error adding to cart:', error);
-            return false;
+            return { success: false, message: 'Error de conexión' };
         } finally {
             setIsLoading(false);
         }
