@@ -201,16 +201,34 @@ export const TemplatesPage = () => {
                                         <button
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                const inCart = cart.some(item => item.templateId === template.id);
-                                                if (inCart || addedToCart.has(template.id)) return;
 
-                                                const success = await addToCart({
-                                                    templateId: template.id,
-                                                    title: template.title,
-                                                    price: template.price
-                                                });
-                                                if (success) {
-                                                    setAddedToCart(prev => new Set([...prev, template.id]));
+                                                // Validate template data
+                                                if (!template.id) {
+                                                    alert(`Error: Esta plantilla "${template.title}" no tiene un ID válido. Contacta al administrador.`);
+                                                    console.error('Template missing ID:', template);
+                                                    return;
+                                                }
+
+                                                const inCart = cart.some(item => item.templateId === template.id);
+                                                if (inCart || addedToCart.has(template.id)) {
+                                                    alert('Esta plantilla ya está en tu carrito.');
+                                                    return;
+                                                }
+
+                                                try {
+                                                    const success = await addToCart({
+                                                        templateId: template.id,
+                                                        title: template.title,
+                                                        price: template.price || 0
+                                                    });
+                                                    if (success) {
+                                                        setAddedToCart(prev => new Set([...prev, template.id]));
+                                                    } else {
+                                                        alert('No se pudo agregar al carrito. Intenta de nuevo.');
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Error adding to cart:', error);
+                                                    alert('Error de conexión. Verifica tu internet e intenta de nuevo.');
                                                 }
                                             }}
                                             className={`p-3 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
