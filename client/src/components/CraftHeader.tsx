@@ -231,12 +231,38 @@ export const CraftHeader = () => {
                                     </Link>
                                 </div>
                             ) : (
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-gray-200 flex items-center justify-center gap-2"
-                                >
-                                    <LogOut size={18} /> Cerrar Sesión
-                                </button>
+                                <div className="space-y-3">
+                                    {/* Cart Link (Mobile) */}
+                                    <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
+                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-primary-craft text-white flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <ShoppingCart size={18} />
+                                                Mi Carrito
+                                            </div>
+                                            {cartCount > 0 && (
+                                                <span className="bg-white text-primary-craft text-sm font-bold px-2 py-0.5 rounded-full">
+                                                    {cartCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </Link>
+
+                                    {/* Account Link (Mobile) */}
+                                    <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
+                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-gray-100 flex items-center gap-2">
+                                            <Settings size={18} />
+                                            Mi Cuenta
+                                        </div>
+                                    </Link>
+
+                                    {/* Logout Button (Mobile) */}
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-gray-200 flex items-center justify-center gap-2"
+                                    >
+                                        <LogOut size={18} /> Cerrar Sesión
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </motion.div>
