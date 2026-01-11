@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, RotateCcw } from 'lucide-react';
 import { CHATBOT_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 // Generate unique session ID
 const getSessionId = () => {
@@ -26,6 +27,13 @@ interface Template {
 }
 
 export const ChatWidget = () => {
+    const { isAuthenticated } = useAuth();
+
+    // Only show chat widget when user is logged in
+    if (!isAuthenticated) {
+        return null;
+    }
+
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
