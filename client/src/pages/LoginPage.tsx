@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
 
 export const LoginPage = () => {
@@ -28,64 +27,68 @@ export const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-[60vh] md:min-h-[70vh] flex items-center justify-center px-4">
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
             <motion.div
-                className="bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-6 md:p-10 shadow-[4px_4px_0px_rgba(45,49,66,0.3)] md:shadow-[8px_8px_0px_rgba(45,49,66,0.3)] w-full max-w-md"
+                className="bg-white rounded-2xl p-8 md:p-12 shadow-lg w-full max-w-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h2 className="text-2xl md:text-4xl font-heading text-center mb-6 md:mb-8 text-ink-black">
-                    ¡Bienvenido! 👋
+                <h2 className="text-3xl md:text-4xl font-serif text-center mb-8 text-elegant-black">
+                    Bienvenido
                 </h2>
 
                 {error && (
-                    <div className="bg-red-100 border-2 border-red-400 text-red-700 px-3 py-2 md:px-4 md:py-3 rounded-lg mb-4 md:mb-6 text-sm md:text-base">
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 md:mb-2 text-sm md:text-base">Email</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Email
+                        </label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-3 md:p-4 border-2 md:border-3 border-dashed border-ink-black rounded-xl font-body text-base md:text-xl bg-paper-white focus:outline-none focus:border-primary-craft"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="tu@email.com"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 md:mb-2 text-sm md:text-base">Contraseña</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Contraseña
+                        </label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-3 md:p-4 border-2 md:border-3 border-dashed border-ink-black rounded-xl font-body text-base md:text-xl bg-paper-white focus:outline-none focus:border-primary-craft"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="••••••••"
                             required
                         />
                     </div>
 
-                    <CraftButton
-                        variant="primary"
-                        className="w-full text-center justify-center"
+                    <button
+                        type="submit"
                         disabled={loading}
+                        className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Entrando...' : 'Iniciar Sesión'}
-                    </CraftButton>
+                    </button>
                 </form>
 
-                <p className="text-center mt-6 md:mt-8 font-body text-gray-600 text-sm md:text-base">
+                <p className="text-center mt-8 text-elegant-gray text-sm">
                     ¿No tienes cuenta?{' '}
-                    <Link to="/register" className="text-primary-craft font-bold hover:underline">
+                    <Link to="/register" className="text-elegant-black font-medium hover:underline">
                         Regístrate aquí
                     </Link>
                 </p>
-                <p className="text-center mt-3 font-body text-sm">
-                    <Link to="/forgot-password" className="text-gray-500 hover:text-primary-craft transition-colors">
+                <p className="text-center mt-3 text-sm">
+                    <Link to="/forgot-password" className="text-elegant-light hover:text-elegant-black transition-colors">
                         ¿Olvidaste tu contraseña?
                     </Link>
                 </p>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
 import { AUTH_URL } from '../config';
 
@@ -51,83 +50,91 @@ export const RegisterPage = () => {
     };
 
     return (
-        <div className="min-h-[60vh] md:min-h-[70vh] flex items-center justify-center px-4 py-4">
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
             <motion.div
-                className="bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-6 md:p-10 shadow-[4px_4px_0px_rgba(45,49,66,0.3)] md:shadow-[8px_8px_0px_rgba(45,49,66,0.3)] w-full max-w-md"
+                className="bg-white rounded-2xl p-8 md:p-12 shadow-lg w-full max-w-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h2 className="text-2xl md:text-4xl font-heading text-center mb-4 md:mb-8 text-ink-black">
-                    ¡Únete! ✨
+                <h2 className="text-3xl md:text-4xl font-serif text-center mb-8 text-elegant-black">
+                    Crear Cuenta
                 </h2>
 
                 {error && (
-                    <div className="bg-red-100 border-2 border-red-400 text-red-700 px-3 py-2 rounded-lg mb-4 text-sm">
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-3 md:space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 text-sm md:text-base">Nombre de usuario</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Nombre de usuario
+                        </label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl font-body text-base bg-paper-white focus:outline-none focus:border-primary-craft"
-                            placeholder="Tu nombre creativo"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
+                            placeholder="Tu nombre"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 text-sm md:text-base">Email</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Email
+                        </label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl font-body text-base bg-paper-white focus:outline-none focus:border-primary-craft"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="tu@email.com"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 text-sm md:text-base">Contraseña</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Contraseña
+                        </label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl font-body text-base bg-paper-white focus:outline-none focus:border-primary-craft"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="••••••••"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block font-heading text-ink-black mb-1 text-sm md:text-base">Confirmar Contraseña</label>
+                        <label className="block text-elegant-gray text-sm mb-2">
+                            Confirmar Contraseña
+                        </label>
                         <input
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl font-body text-base bg-paper-white focus:outline-none focus:border-primary-craft"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="••••••••"
                             required
                         />
                     </div>
 
-                    <CraftButton
-                        variant="accent"
-                        className="w-full text-center justify-center"
+                    <button
+                        type="submit"
                         disabled={loading}
+                        className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                     >
                         {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-                    </CraftButton>
+                    </button>
                 </form>
 
-                <p className="text-center mt-4 md:mt-8 font-body text-gray-600 text-sm">
+                <p className="text-center mt-8 text-elegant-gray text-sm">
                     ¿Ya tienes cuenta?{' '}
-                    <Link to="/login" className="text-primary-craft font-bold hover:underline">
+                    <Link to="/login" className="text-elegant-black font-medium hover:underline">
                         Inicia sesión
                     </Link>
                 </p>

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
 import { AUTH_URL } from '../config';
-
+import { Mail } from 'lucide-react';
 
 export const VerifyEmailPage = () => {
     const location = useLocation();
@@ -29,12 +28,11 @@ export const VerifyEmailPage = () => {
             const data = await response.json();
 
             if (response.ok) {
-                // Save token and redirect
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 setSuccess('¡Verificado! Redirigiendo...');
                 setTimeout(() => {
-                    window.location.href = '/'; // Force reload to update auth state
+                    window.location.href = '/';
                 }, 1500);
             } else {
                 setError(data.message);
@@ -73,29 +71,32 @@ export const VerifyEmailPage = () => {
     }
 
     return (
-        <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
             <motion.div
-                className="bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-10 shadow-[8px_8px_0px_rgba(45,49,66,0.3)] max-w-md w-full text-center"
+                className="bg-white rounded-2xl p-8 md:p-12 shadow-lg max-w-md w-full text-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <div className="text-6xl mb-4">📧</div>
-                <h2 className="text-3xl font-heading mb-4 text-ink-black">
+                <div className="w-16 h-16 bg-lavender-soft rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Mail className="w-8 h-8 text-elegant-gray" />
+                </div>
+
+                <h2 className="text-3xl font-serif mb-4 text-elegant-black">
                     Verifica tu Email
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-elegant-gray mb-8">
                     Enviamos un código de 6 dígitos a:<br />
-                    <strong className="text-ink-black">{email}</strong>
+                    <span className="text-elegant-black font-medium">{email}</span>
                 </p>
 
                 {error && (
-                    <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div className="bg-green-100 border-2 border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                    <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg mb-6 text-sm">
                         {success}
                     </div>
                 )}
@@ -105,26 +106,26 @@ export const VerifyEmailPage = () => {
                         type="text"
                         value={code}
                         onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="w-full p-4 border-4 border-dashed border-primary-craft rounded-xl text-center text-3xl font-heading tracking-[0.5em] bg-paper-white focus:outline-none"
+                        className="w-full p-4 bg-cream rounded-xl text-center text-2xl font-medium tracking-[0.5em] text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20"
                         placeholder="000000"
                         maxLength={6}
                         required
                     />
 
-                    <CraftButton
-                        variant="primary"
-                        className="w-full justify-center"
+                    <button
+                        type="submit"
                         disabled={loading || code.length !== 6}
+                        className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Verificando...' : 'Verificar Código'}
-                    </CraftButton>
+                    </button>
                 </form>
 
                 <button
                     onClick={handleResend}
-                    className="mt-6 text-primary-craft font-bold hover:underline"
+                    className="mt-6 text-elegant-gray hover:text-elegant-black transition-colors text-sm"
                 >
-                    ¿No recibiste el código? Reenviar
+                    ¿No recibiste el código? <span className="font-medium">Reenviar</span>
                 </button>
             </motion.div>
         </div>
