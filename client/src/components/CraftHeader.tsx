@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Star, LogOut, User, Menu, X, Settings } from 'lucide-react';
+import { ShoppingCart, LogOut, User, Menu, X, Settings, ChevronDown } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -11,6 +11,7 @@ export const CraftHeader = () => {
     const { isAuthenticated, user, logout } = useAuth();
     const { cartCount } = useCart();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const menuItems = [
         { name: 'Inicio', path: '/' },
@@ -25,146 +26,106 @@ export const CraftHeader = () => {
     };
 
     return (
-        <header className="relative z-50 px-4 md:px-8 pt-4 md:pt-6 pb-2">
-            <div className="flex items-center justify-between border-b-4 border-ink-black pb-4 bg-gradient-to-b from-paper-white to-orange-50/50 rounded-t-xl shadow-sm px-4">
+        <header className="relative z-50 bg-cream">
+            <div className="max-w-7xl mx-auto px-6 py-4">
+                <div className="flex items-center justify-between">
 
-                {/* Logo Section */}
-                <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                    <motion.div
-                        className="relative cursor-pointer"
-                        whileHover={{ scale: 1.05 }}
-                    >
-                        <h1 className="text-2xl md:text-4xl font-heading font-bold text-ink-black tracking-tight">
-                            Lore<span className="text-primary-craft">Notes</span>
-                        </h1>
-                        <motion.div
-                            className="absolute -top-2 -right-4 md:-top-4 md:-right-6 text-warning-yellow"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    {/* Logo - Elegant Text */}
+                    <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                        <motion.h1
+                            className="text-xl md:text-2xl font-serif italic text-elegant-black tracking-wide"
+                            whileHover={{ opacity: 0.7 }}
                         >
-                            <Star fill="currentColor" size={16} className="md:w-6 md:h-6" />
-                        </motion.div>
-                    </motion.div>
-                </Link>
+                            LoreNotes
+                        </motion.h1>
+                    </Link>
 
-                {/* Desktop Navigation */}
-                {isAuthenticated && (
-                    <nav className="hidden lg:flex items-end gap-2">
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-8">
                         {menuItems.map((item) => {
                             const isActive = location.pathname === item.path;
                             return (
                                 <Link key={item.name} to={item.path}>
-                                    <motion.div
-                                        className={`
-                                            px-4 py-2 rounded-t-lg border-t-2 border-x-2 border-ink-black font-heading font-bold cursor-pointer text-sm
-                                            ${isActive
-                                                ? 'bg-white z-10 relative border-b-0'
-                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-50'
-                                            }
-                                        `}
-                                        whileHover={{ y: -3 }}
-                                    >
+                                    <span className={`
+                                        text-sm font-medium transition-colors
+                                        ${isActive
+                                            ? 'text-elegant-black'
+                                            : 'text-elegant-gray hover:text-elegant-black'
+                                        }
+                                    `}>
                                         {item.name}
-                                    </motion.div>
+                                    </span>
                                 </Link>
                             );
                         })}
-                    </nav>
-                )}
 
-                {/* Desktop User Actions */}
-                <div className="hidden md:flex items-center gap-3">
-                    {isAuthenticated ? (
-                        <>
-                            {/* User Info */}
-                            <div className="flex items-center gap-2 bg-accent-craft/30 px-3 py-1.5 rounded-full border-2 border-ink-black">
-                                <User size={16} />
-                                <span className="font-heading text-xs">{user?.username}</span>
-                                {user?.role === 'admin' && (
-                                    <span className="bg-primary-craft text-white text-xs px-2 py-0.5 rounded-full">Admin</span>
-                                )}
-                            </div>
-
-                            {/* Admin Link */}
-                            {user?.role === 'admin' && (
-                                <Link to="/admin">
-                                    <motion.button
-                                        className="bg-accent-craft text-ink-black px-3 py-1.5 rounded-full border-2 border-ink-black font-heading font-bold text-sm"
-                                        whileHover={{ scale: 1.05 }}
-                                    >
-                                        Admin
-                                    </motion.button>
-                                </Link>
-                            )}
-
-                            {/* Account Link */}
-                            <Link to="/account">
-                                <motion.button
-                                    className="bg-gray-100 text-ink-black p-2 rounded-full border-2 border-ink-black"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    title="Mi Cuenta"
+                        {/* User Menu with Dropdown */}
+                        {isAuthenticated && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                    className="flex items-center gap-1 text-sm text-elegant-gray hover:text-elegant-black transition-colors"
                                 >
-                                    <Settings size={16} />
-                                </motion.button>
-                            </Link>
+                                    Cuenta
+                                    <ChevronDown size={14} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
 
-                            {/* Cart */}
-                            <Link to="/cart">
-                                <motion.button
-                                    className="relative bg-primary-craft text-white p-2 rounded-full border-2 border-ink-black"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                >
-                                    <ShoppingCart size={18} />
-                                    {cartCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-success-green border border-ink-black text-ink-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                                            {cartCount}
-                                        </span>
+                                <AnimatePresence>
+                                    {dropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2"
+                                            onMouseLeave={() => setDropdownOpen(false)}
+                                        >
+                                            <Link
+                                                to="/cart"
+                                                className="flex items-center gap-2 px-4 py-2 text-sm text-elegant-gray hover:bg-cream transition-colors"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <ShoppingCart size={16} />
+                                                Carrito {cartCount > 0 && `(${cartCount})`}
+                                            </Link>
+                                            <Link
+                                                to="/account"
+                                                className="flex items-center gap-2 px-4 py-2 text-sm text-elegant-gray hover:bg-cream transition-colors"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <Settings size={16} />
+                                                Mi Cuenta
+                                            </Link>
+                                            <hr className="my-2 border-gray-100" />
+                                            <button
+                                                onClick={handleLogout}
+                                                className="flex items-center gap-2 px-4 py-2 text-sm text-elegant-gray hover:bg-cream transition-colors w-full text-left"
+                                            >
+                                                <LogOut size={16} />
+                                                Cerrar Sesión
+                                            </button>
+                                        </motion.div>
                                     )}
-                                </motion.button>
-                            </Link>
+                                </AnimatePresence>
+                            </div>
+                        )}
 
-                            {/* Logout */}
-                            <motion.button
-                                onClick={handleLogout}
-                                className="bg-gray-200 text-ink-black p-2 rounded-full border-2 border-ink-black"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                title="Cerrar sesión"
-                            >
-                                <LogOut size={16} />
-                            </motion.button>
-                        </>
-                    ) : (
-                        <div className="flex gap-2">
+                        {!isAuthenticated && (
                             <Link to="/login">
-                                <motion.button
-                                    className="px-4 py-1.5 font-heading font-bold border-2 border-ink-black rounded-lg bg-white hover:bg-gray-50 text-sm"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    Entrar
-                                </motion.button>
+                                <button className="bg-elegant-black text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+                                    Iniciar Sesión
+                                </button>
                             </Link>
-                            <Link to="/register">
-                                <motion.button
-                                    className="px-4 py-1.5 font-heading font-bold border-2 border-ink-black rounded-lg bg-primary-craft text-white text-sm"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    Registrarse
-                                </motion.button>
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </nav>
 
-                {/* Mobile Menu Button */}
-                <button
-                    className="md:hidden p-2 rounded-lg border-2 border-ink-black bg-white"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
-                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden p-2"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Menu */}
@@ -174,95 +135,55 @@ export const CraftHeader = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-white border-x-4 border-b-4 border-ink-black rounded-b-xl overflow-hidden"
+                        className="md:hidden bg-white border-t border-gray-100"
                     >
-                        <div className="p-4 space-y-3">
-                            {/* User Info (Mobile) */}
-                            {isAuthenticated && user && (
-                                <div className="flex items-center gap-2 bg-accent-craft/30 px-4 py-2 rounded-lg border-2 border-ink-black">
-                                    <User size={20} />
-                                    <span className="font-heading">{user.username}</span>
-                                    {user.role === 'admin' && (
-                                        <span className="bg-primary-craft text-white text-xs px-2 py-0.5 rounded-full ml-auto">Admin</span>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Navigation Links (Mobile) */}
-                            {isAuthenticated && menuItems.map((item) => {
-                                const isActive = location.pathname === item.path;
-                                return (
-                                    <Link
-                                        key={item.name}
-                                        to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        <div className={`
-                                            px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black
-                                            ${isActive ? 'bg-primary-craft text-white' : 'bg-gray-50'}
-                                        `}>
-                                            {item.name}
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-
-                            {/* Admin Link (Mobile) */}
-                            {user?.role === 'admin' && (
-                                <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                                    <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-accent-craft">
-                                        Panel Admin
-                                    </div>
+                        <div className="px-6 py-4 space-y-3">
+                            {menuItems.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    to={item.path}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="block py-2 text-elegant-gray hover:text-elegant-black transition-colors"
+                                >
+                                    {item.name}
                                 </Link>
-                            )}
+                            ))}
 
-                            {/* Auth Buttons (Mobile) */}
-                            {!isAuthenticated ? (
-                                <div className="flex gap-2">
-                                    <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-white text-center">
-                                            Entrar
-                                        </div>
+                            {isAuthenticated && (
+                                <>
+                                    <hr className="border-gray-100" />
+                                    <Link
+                                        to="/cart"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-2 py-2 text-elegant-gray hover:text-elegant-black"
+                                    >
+                                        <ShoppingCart size={18} />
+                                        Mi Carrito {cartCount > 0 && `(${cartCount})`}
                                     </Link>
-                                    <Link to="/register" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-primary-craft text-white text-center">
-                                            Registrarse
-                                        </div>
+                                    <Link
+                                        to="/account"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-2 py-2 text-elegant-gray hover:text-elegant-black"
+                                    >
+                                        <Settings size={18} />
+                                        Mi Cuenta
                                     </Link>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {/* Cart Link (Mobile) */}
-                                    <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
-                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-primary-craft text-white flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <ShoppingCart size={18} />
-                                                Mi Carrito
-                                            </div>
-                                            {cartCount > 0 && (
-                                                <span className="bg-white text-primary-craft text-sm font-bold px-2 py-0.5 rounded-full">
-                                                    {cartCount}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </Link>
-
-                                    {/* Account Link (Mobile) */}
-                                    <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
-                                        <div className="px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-gray-100 flex items-center gap-2">
-                                            <Settings size={18} />
-                                            Mi Cuenta
-                                        </div>
-                                    </Link>
-
-                                    {/* Logout Button (Mobile) */}
                                     <button
                                         onClick={handleLogout}
-                                        className="w-full px-4 py-3 rounded-lg font-heading font-bold border-2 border-ink-black bg-gray-200 flex items-center justify-center gap-2"
+                                        className="flex items-center gap-2 py-2 text-elegant-gray hover:text-elegant-black w-full"
                                     >
-                                        <LogOut size={18} /> Cerrar Sesión
+                                        <LogOut size={18} />
+                                        Cerrar Sesión
                                     </button>
-                                </div>
+                                </>
+                            )}
+
+                            {!isAuthenticated && (
+                                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                                    <button className="w-full bg-elegant-black text-white py-3 rounded-full text-sm font-medium">
+                                        Iniciar Sesión
+                                    </button>
+                                </Link>
                             )}
                         </div>
                     </motion.div>

@@ -1,79 +1,59 @@
 import { Instagram, Music2, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-// Configure your social media links here
 const socialLinks = [
-    { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/lore_notes2/', color: '#E4405F' },
-    { name: 'TikTok', icon: Music2, url: 'https://www.tiktok.com/@lore_notes2?lang=es', color: '#00F2EA' },
-    { name: 'Email', icon: Mail, url: 'mailto:lorenotes2@gmail.com', color: '#FF6B9D' },
+    { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/lore_notes2/' },
+    { name: 'TikTok', icon: Music2, url: 'https://www.tiktok.com/@lore_notes2?lang=es' },
+    { name: 'Email', icon: Mail, url: 'mailto:lorenotes2@gmail.com' },
 ];
 
 export const CraftFooter = () => {
     return (
-        <footer className="relative mt-20 bg-ink-black text-paper-white pt-16 pb-8 px-8">
-            {/* Washi Tape Decoration Top */}
-            <div
-                className="absolute -top-6 left-0 right-0 h-8 shadow-sm transform -rotate-1"
-                style={{
-                    background: `repeating-linear-gradient(
-                        45deg,
-                        rgba(255, 107, 157, 0.9) 0px,
-                        rgba(255, 107, 157, 0.9) 20px,
-                        rgba(254, 193, 128, 0.9) 20px,
-                        rgba(254, 193, 128, 0.9) 40px
-                    )`,
-                    clipPath: 'polygon(0% 0%, 100% 2%, 100% 100%, 0% 98%)'
-                }}
-            />
+        <footer className="bg-white border-t border-gray-100 mt-20">
+            <div className="max-w-6xl mx-auto px-6 py-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Brand */}
+                    <div>
+                        <h3 className="text-xl font-serif italic text-elegant-black mb-4">LoreNotes</h3>
+                        <p className="text-elegant-gray text-sm leading-relaxed">
+                            Tu destino para encontrar las mejores plantillas creativas. Diseños únicos para cada ocasión.
+                        </p>
+                    </div>
 
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-                {/* Brand */}
-                <div className="space-y-4">
-                    <h3 className="text-2xl font-heading text-primary-craft">LoreNotes</h3>
-                    <p className="font-body text-gray-300">
-                        Tu destino mágico para encontrar las mejores plantillas creativas. ¡Haz realidad tus ideas!
-                    </p>
-                </div>
+                    {/* Links */}
+                    <div>
+                        <h4 className="text-sm font-medium text-elegant-black uppercase tracking-wider mb-4">Explorar</h4>
+                        <ul className="space-y-2">
+                            <li><Link to="/templates" className="text-elegant-gray hover:text-elegant-black transition-colors text-sm">Plantillas</Link></li>
+                            <li><Link to="/blog" className="text-elegant-gray hover:text-elegant-black transition-colors text-sm">Blog</Link></li>
+                            <li><Link to="/terms" className="text-elegant-gray hover:text-elegant-black transition-colors text-sm">Términos y Condiciones</Link></li>
+                            <li><Link to="/privacy" className="text-elegant-gray hover:text-elegant-black transition-colors text-sm">Política de Privacidad</Link></li>
+                        </ul>
+                    </div>
 
-                {/* Links */}
-                <div className="space-y-4">
-                    <h3 className="text-xl font-heading text-secondary-craft">Explora</h3>
-                    <ul className="space-y-2 font-body text-gray-300">
-                        <li><Link to="/templates" className="hover:text-white transition-colors">Plantillas</Link></li>
-                        <li><Link to="/blog" className="hover:text-white transition-colors">Blog Creativo</Link></li>
-                        <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
-                        <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
-                    </ul>
-                </div>
-
-                {/* Social */}
-                <div className="space-y-4">
-                    <h3 className="text-xl font-heading text-accent-craft">Síguenos</h3>
-                    <p className="font-body text-gray-400 text-sm">
-                        ¡Compartimos inspiración diaria en nuestras redes! 🎨
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                        {socialLinks.map((social) => (
-                            <motion.a
-                                key={social.name}
-                                href={social.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-3 bg-gray-800 rounded-xl border-2 border-gray-700 hover:border-gray-500 transition-all"
-                                whileHover={{ scale: 1.1, backgroundColor: social.color }}
-                                whileTap={{ scale: 0.95 }}
-                                title={social.name}
-                            >
-                                <social.icon size={20} className="text-white" />
-                            </motion.a>
-                        ))}
+                    {/* Social */}
+                    <div>
+                        <h4 className="text-sm font-medium text-elegant-black uppercase tracking-wider mb-4">Síguenos</h4>
+                        <div className="flex gap-4">
+                            {socialLinks.map((social) => (
+                                <a
+                                    key={social.name}
+                                    href={social.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 rounded-full bg-cream hover:bg-cream-dark transition-colors"
+                                    title={social.name}
+                                >
+                                    <social.icon size={18} className="text-elegant-gray hover:text-elegant-black transition-colors" />
+                                </a>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="mt-12 pt-8 border-t border-gray-700 text-center font-handwriting text-xl text-gray-500">
-                Hecho con <span className="text-red-500 animate-pulse">❤</span> y mucha creatividad.
+                <div className="mt-10 pt-6 border-t border-gray-100 text-center text-sm text-elegant-light">
+                    © {new Date().getFullYear()} LoreNotes. Todos los derechos reservados.
+                </div>
             </div>
         </footer>
     );

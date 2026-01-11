@@ -94,11 +94,11 @@ export const TemplatesPage = () => {
 
     const getCategoryLabel = (cat: string) => {
         const labels: Record<string, string> = {
-            bodas: '💍 Bodas',
-            cumpleanos: '🎂 Cumpleaños',
-            negocios: '💼 Negocios',
-            educacion: '📚 Educación',
-            otros: '✨ Otros'
+            bodas: 'Bodas',
+            cumpleanos: 'Cumpleaños',
+            negocios: 'Negocios',
+            educacion: 'Educación',
+            otros: 'Otros'
         };
         return labels[cat] || cat;
     };
@@ -107,29 +107,29 @@ export const TemplatesPage = () => {
         <div className="space-y-6">
             {/* Header */}
             <motion.div
-                className="bg-gradient-to-r from-primary-craft to-secondary-craft p-4 md:p-6 rounded-xl border-4 border-ink-black"
+                className="py-8 md:py-12 text-center"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-2xl md:text-4xl font-heading text-white">Explorar Plantillas 🎨</h1>
-                <p className="text-white/80 text-sm md:text-base">Encuentra la plantilla perfecta para tu proyecto</p>
+                <h1 className="text-3xl md:text-5xl font-serif text-elegant-black mb-3">Plantillas</h1>
+                <p className="text-elegant-gray">Encuentra la plantilla perfecta para tu proyecto</p>
             </motion.div>
 
             {/* Search and Filters */}
             <motion.div
-                className="bg-white/95 p-4 rounded-xl border-4 border-ink-black flex flex-col md:flex-row gap-4"
+                className="bg-white p-4 rounded-2xl flex flex-col md:flex-row gap-4 mb-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
             >
                 {/* Search */}
                 <div className="flex-1 relative">
-                    <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-elegant-light" />
                     <input
                         type="text"
                         placeholder="Buscar plantillas..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-dashed border-gray-300 rounded-lg focus:outline-none focus:border-primary-craft"
+                        className="w-full pl-11 pr-4 py-3 bg-cream rounded-full border-none focus:outline-none focus:ring-2 focus:ring-elegant-black/10"
                     />
                 </div>
 
@@ -137,8 +137,8 @@ export const TemplatesPage = () => {
                 <div className="flex gap-2 flex-wrap">
                     <button
                         onClick={() => setSelectedCategory('')}
-                        className={`px-3 py-1 rounded-full text-sm font-heading border-2 transition-all
-                            ${!selectedCategory ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300 hover:border-primary-craft'}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                            ${!selectedCategory ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                     >
                         Todas
                     </button>
@@ -146,8 +146,8 @@ export const TemplatesPage = () => {
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-3 py-1 rounded-full text-sm font-heading border-2 transition-all
-                                ${selectedCategory === cat ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300 hover:border-primary-craft'}`}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                                ${selectedCategory === cat ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                         >
                             {getCategoryLabel(cat)}
                         </button>

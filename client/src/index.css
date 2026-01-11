@@ -1,68 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Fredoka:wght@300;400;600&family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
 @import "tailwindcss";
 
-/* Tailwind v4 Theme Configuration */
+/* Tailwind v4 Theme Configuration - Elegant Style */
 @theme {
-  /* Colors */
-  --color-primary-craft: #FF6B9D;
-  --color-secondary-craft: #FEC180;
-  --color-accent-craft: #A8E6CF;
-  --color-craft-purple: #C9A0DC;
-  --color-craft-blue: #84C7D0;
-  --color-paper-white: #FFFEF7;
-  --color-ink-black: #2D3142;
-  --color-craft-gray: #BFC0C0;
-  --color-wood-brown: #A67B5B;
-  --color-success-green: #4ECDC4;
-  --color-warning-yellow: #FFE66D;
-  --color-error-red: #FF6B6B;
-  --color-info-blue: #4A90E2;
+  /* Elegant Colors */
+  --color-cream: #f5f3ef;
+  --color-cream-dark: #ebe8e2;
+  --color-elegant-black: #1a1a1a;
+  --color-elegant-gray: #6b6b6b;
+  --color-elegant-light: #9a9a9a;
+  --color-lavender-soft: #e8e4f0;
+  --color-mint-soft: #d4e8e0;
+  --color-blush-soft: #f5e6e8;
+  
+  /* Legacy compatibility */
+  --color-primary-craft: #1a1a1a;
+  --color-secondary-craft: #e8e4f0;
+  --color-accent-craft: #d4e8e0;
+  --color-paper-white: #f5f3ef;
+  --color-ink-black: #1a1a1a;
+  --color-craft-gray: #9a9a9a;
 
   /* Fonts */
-  --font-heading: 'Fredoka', 'Comic Sans MS', cursive;
-  --font-handwriting: 'Caveat', 'Dancing Script', cursive;
-  --font-body: 'Inter', 'Roboto', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    background-color: var(--color-paper-white);
-    color: var(--color-ink-black);
+    background-color: var(--color-cream);
+    color: var(--color-elegant-black);
     font-family: var(--font-body);
     overflow-x: hidden;
-    background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--color-ink-black);
+    color: var(--color-elegant-black);
+    font-weight: 500;
+  }
+
+  a {
+    transition: color 0.2s ease;
   }
 }
 
-/* Custom Scrollbar */
+/* Elegant Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: var(--color-paper-white);
+  background-color: var(--color-cream);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-secondary-craft);
+  background-color: var(--color-elegant-light);
   border-radius: 9999px;
-  border: 2px solid var(--color-paper-white);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-primary-craft);
+  background-color: var(--color-elegant-gray);
+}
+
+/* Elegant Button Styles */
+.btn-elegant {
+  background-color: var(--color-elegant-black);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-elegant:hover {
+  background-color: #333;
+  transform: translateY(-1px);
 }
 
 /* Animation utilities */
