@@ -5,6 +5,7 @@ interface User {
     username: string;
     email: string;
     role: string;
+    emailNotifications?: boolean;
 }
 
 interface AuthContextType {

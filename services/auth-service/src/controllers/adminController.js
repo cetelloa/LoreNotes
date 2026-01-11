@@ -59,7 +59,8 @@ exports.getMe = async (req, res) => {
             username: user.username,
             email: user.email,
             role: user.role,
-            isVerified: user.isVerified
+            isVerified: user.isVerified,
+            emailNotifications: user.emailNotifications ?? true
         });
 
     } catch (error) {

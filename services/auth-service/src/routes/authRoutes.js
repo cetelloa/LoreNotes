@@ -28,6 +28,10 @@ router.delete('/cart/:templateId', authMiddleware, authController.removeFromCart
 router.post('/checkout', authMiddleware, authController.checkout);
 router.get('/purchases', authMiddleware, authController.getPurchases);
 
+// Notification Preferences
+router.put('/notifications', authMiddleware, authController.updateNotificationPreferences);
+router.get('/subscribed-users', authMiddleware, authController.getSubscribedUsers);
+
 // ========== ADMIN ROUTES ==========
 router.post('/make-admin', adminController.makeAdmin);
 

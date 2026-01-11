@@ -436,3 +436,41 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({ message: 'Error al restablecer contraseña' });
     }
 };
+
+// Update notification preferences
+exports.updateNotificationPreferences = async (req, res) => {
+    try {
+        const { emailNotifications } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        user.emailNotifications = emailNotifications;
+        await user.save();
+
+        res.json({
+            message: 'Preferencias actualizadas',
+            emailNotifications: user.emailNotifications
+        });
+    } catch (error) {
+        console.error('Update preferences error:', error);
+        res.status(500).json({ message: 'Error al actualizar preferencias' });
+    }
+};
+
+// Get subscribed users for blog notifications (admin only)
+exports.getSubscribedUsers = async (req, res) => {
+    try {
+        const users = await User.find({
+            isVerified: true,
+            emailNotifications: true
+        }).select('email username');
+
+        res.json({ users });
+    } catch (error) {
+        console.error('Get subscribed users error:', error);
+        res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+};
