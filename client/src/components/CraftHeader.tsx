@@ -8,7 +8,7 @@ import { useState } from 'react';
 export const CraftHeader = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated, isAdmin, logout } = useAuth();
     const { cartCount } = useCart();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -103,6 +103,18 @@ export const CraftHeader = () => {
                                                 <LogOut size={16} />
                                                 Cerrar Sesión
                                             </button>
+                                            {isAdmin && (
+                                                <>
+                                                    <hr className="my-2 border-gray-100" />
+                                                    <Link
+                                                        to="/admin"
+                                                        className="flex items-center gap-2 px-4 py-2 text-sm text-elegant-black font-medium hover:bg-cream transition-colors"
+                                                        onClick={() => setDropdownOpen(false)}
+                                                    >
+                                                        ⚙️ Panel Admin
+                                                    </Link>
+                                                </>
+                                            )}
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -175,6 +187,15 @@ export const CraftHeader = () => {
                                         <LogOut size={18} />
                                         Cerrar Sesión
                                     </button>
+                                    {isAdmin && (
+                                        <Link
+                                            to="/admin"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-2 py-2 text-elegant-black font-medium"
+                                        >
+                                            ⚙️ Panel Admin
+                                        </Link>
+                                    )}
                                 </>
                             )}
 
