@@ -1,6 +1,7 @@
 const BlogPost = require('../models/BlogPost');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendBlogNotificationEmail } = require('../services/emailService');
 
 // Middleware to verify admin
 const verifyAdmin = async (req, res, next) => {
@@ -55,10 +56,34 @@ const getPost = async (req, res) => {
     }
 };
 
+// Send notifications to subscribed users
+const sendNotificationsToSubscribers = async (post) => {
+    try {
+        // Get all verified users with email notifications enabled
+        const subscribedUsers = await User.find({
+            isVerified: true,
+            emailNotifications: true
+        }).select('email username');
+
+        console.log(`Sending blog notification to ${subscribedUsers.length} subscribers`);
+
+        // Send emails (don't wait for all to complete)
+        for (const user of subscribedUsers) {
+            try {
+                await sendBlogNotificationEmail(user.email, post.title, user.username);
+            } catch (emailError) {
+                console.error(`Failed to send email to ${user.email}:`, emailError.message);
+            }
+        }
+    } catch (error) {
+        console.error('Error sending notifications:', error);
+    }
+};
+
 // Create post (admin only)
 const createPost = async (req, res) => {
     try {
-        const { title, content, author, isPublished, tags, imageUrl } = req.body;
+        const { title, content, author, isPublished, tags, imageUrl, videoUrl } = req.body;
 
         const post = new BlogPost({
             title,
@@ -66,10 +91,17 @@ const createPost = async (req, res) => {
             author: author || req.user.username,
             isPublished: isPublished || false,
             tags: tags || [],
-            imageUrl
+            imageUrl,
+            videoUrl
         });
 
         await post.save();
+
+        // If published, send notifications to subscribed users
+        if (post.isPublished) {
+            sendNotificationsToSubscribers(post);
+        }
+
         res.status(201).json(post);
     } catch (error) {
         res.status(500).json({ message: 'Error al crear post', error: error.message });
@@ -79,15 +111,25 @@ const createPost = async (req, res) => {
 // Update post (admin only)
 const updatePost = async (req, res) => {
     try {
-        const { title, content, isPublished, tags, imageUrl } = req.body;
+        const { title, content, isPublished, tags, imageUrl, videoUrl } = req.body;
+
+        // Get the current post to check if it was previously published
+        const existingPost = await BlogPost.findById(req.params.id);
+        const wasPublished = existingPost?.isPublished;
 
         const post = await BlogPost.findByIdAndUpdate(
             req.params.id,
-            { title, content, isPublished, tags, imageUrl },
+            { title, content, isPublished, tags, imageUrl, videoUrl },
             { new: true }
         );
 
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+        // If just became published (wasn't before, is now), send notifications
+        if (!wasPublished && isPublished) {
+            sendNotificationsToSubscribers(post);
+        }
+
         res.json(post);
     } catch (error) {
         res.status(500).json({ message: 'Error al actualizar post', error: error.message });

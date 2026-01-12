@@ -25,6 +25,7 @@ interface BlogPost {
     author: string;
     createdAt?: string;
     isPublished: boolean;
+    videoUrl?: string;
 }
 
 export const AdminDashboard = () => {
@@ -371,6 +372,13 @@ export const AdminDashboard = () => {
                                     <textarea value={editingBlog.content}
                                         onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
                                         className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" rows={8} />
+                                </div>
+                                <div>
+                                    <label className="font-heading text-sm mb-1 block">URL de Video (YouTube/TikTok)</label>
+                                    <input type="url" value={editingBlog.videoUrl || ''}
+                                        onChange={(e) => setEditingBlog({ ...editingBlog, videoUrl: e.target.value })}
+                                        placeholder="https://youtube.com/watch?v=... o TikTok URL"
+                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <input type="checkbox" checked={editingBlog.isPublished}

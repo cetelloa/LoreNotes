@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight } from 'lucide-react';
+import { Calendar, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import { BLOG_URL } from '../config';
+import { VideoEmbed } from '../components/VideoEmbed';
 
 interface BlogPost {
     _id: string;
@@ -10,6 +11,8 @@ interface BlogPost {
     author: string;
     createdAt: string;
     isPublished: boolean;
+    videoUrl?: string;
+    imageUrl?: string;
 }
 
 export const BlogPage = () => {
@@ -45,8 +48,8 @@ export const BlogPage = () => {
     if (loading) {
         return (
             <div className="text-center py-12">
-                <div className="animate-spin w-12 h-12 border-4 border-primary-craft border-t-transparent rounded-full mx-auto"></div>
-                <p className="mt-4 text-gray-500">Cargando blog...</p>
+                <div className="animate-spin w-8 h-8 border-2 border-elegant-black border-t-transparent rounded-full mx-auto"></div>
+                <p className="mt-4 text-elegant-gray">Cargando blog...</p>
             </div>
         );
     }
@@ -54,29 +57,44 @@ export const BlogPage = () => {
     // Single post view
     if (selectedPost) {
         return (
-            <div className="space-y-6">
+            <div className="max-w-4xl mx-auto px-4 py-8">
                 <button
                     onClick={() => setSelectedPost(null)}
-                    className="text-primary-craft font-heading flex items-center gap-1 hover:underline"
+                    className="flex items-center gap-2 text-elegant-gray hover:text-elegant-black transition-colors mb-8"
                 >
-                    ← Volver al blog
+                    <ArrowLeft size={18} /> Volver al blog
                 </button>
 
                 <motion.article
-                    className="bg-white/95 p-6 md:p-10 rounded-xl border-4 border-ink-black shadow-lg"
+                    className="bg-white rounded-2xl p-6 md:p-10 shadow-lg"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <h1 className="text-2xl md:text-4xl font-heading text-ink-black mb-4">{selectedPost.title}</h1>
+                    <h1 className="text-3xl md:text-4xl font-serif text-elegant-black mb-4">
+                        {selectedPost.title}
+                    </h1>
 
-                    <div className="flex items-center gap-4 text-gray-500 text-sm mb-6 border-b pb-4">
-                        <span className="flex items-center gap-1"><User size={14} /> {selectedPost.author}</span>
-                        <span className="flex items-center gap-1"><Calendar size={14} /> {formatDate(selectedPost.createdAt)}</span>
+                    <div className="flex items-center gap-4 text-elegant-gray text-sm mb-8 pb-6 border-b border-gray-100">
+                        <span className="flex items-center gap-1">
+                            <User size={14} /> {selectedPost.author}
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <Calendar size={14} /> {formatDate(selectedPost.createdAt)}
+                        </span>
                     </div>
+
+                    {/* Video Embed */}
+                    {selectedPost.videoUrl && (
+                        <div className="mb-8">
+                            <VideoEmbed url={selectedPost.videoUrl} title={selectedPost.title} />
+                        </div>
+                    )}
 
                     <div className="prose prose-lg max-w-none">
                         {selectedPost.content.split('\n').map((paragraph, idx) => (
-                            <p key={idx} className="mb-4 text-ink-black leading-relaxed">{paragraph}</p>
+                            <p key={idx} className="mb-4 text-elegant-black leading-relaxed">
+                                {paragraph}
+                            </p>
                         ))}
                     </div>
                 </motion.article>
@@ -85,56 +103,64 @@ export const BlogPage = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="max-w-6xl mx-auto px-4 py-8">
             {/* Header */}
-            <motion.div
-                className="bg-gradient-to-r from-craft-purple to-craft-blue p-4 md:p-6 rounded-xl border-4 border-ink-black"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <h1 className="text-2xl md:text-4xl font-heading text-white">Blog Creativo 📝</h1>
-                <p className="text-white/80 text-sm md:text-base">Tutoriales, consejos y novedades de diseño</p>
-            </motion.div>
+            <div className="text-center mb-12">
+                <h1 className="text-3xl md:text-5xl font-serif text-elegant-black mb-4">Blog</h1>
+                <p className="text-elegant-gray">Tutoriales, consejos y novedades</p>
+            </div>
 
             {/* Posts Grid */}
             {posts.length === 0 ? (
-                <div className="text-center py-12 bg-white/90 rounded-xl border-4 border-ink-black">
-                    <p className="text-xl text-gray-500">No hay publicaciones todavía 📭</p>
-                    <p className="text-gray-400 mt-2">¡Pronto habrá contenido creativo!</p>
+                <div className="text-center py-16 bg-white rounded-2xl">
+                    <p className="text-xl text-elegant-gray">No hay publicaciones todavía</p>
+                    <p className="text-elegant-light mt-2">¡Pronto habrá contenido!</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map((post, idx) => (
                         <motion.article
                             key={post._id}
-                            className="bg-white rounded-xl border-4 border-ink-black overflow-hidden shadow-[4px_4px_0px_rgba(45,49,66,0.2)] hover:shadow-[6px_6px_0px_rgba(45,49,66,0.3)] transition-all cursor-pointer"
+                            className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer group"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
-                            whileHover={{ y: -4 }}
                             onClick={() => setSelectedPost(post)}
                         >
-                            {/* Decorative Header */}
-                            <div className="h-24 md:h-32 bg-gradient-to-br from-accent-craft via-secondary-craft to-primary-craft relative">
-                                <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                                    <span className="text-6xl">✏️</span>
-                                </div>
+                            {/* Image/Video placeholder */}
+                            <div className="h-48 bg-lavender-soft relative overflow-hidden">
+                                {post.imageUrl ? (
+                                    <img
+                                        src={post.imageUrl}
+                                        alt={post.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <span className="text-5xl opacity-30">📝</span>
+                                    </div>
+                                )}
+                                {post.videoUrl && (
+                                    <div className="absolute top-3 right-3 bg-elegant-black text-white px-2 py-1 rounded-full text-xs">
+                                        Video
+                                    </div>
+                                )}
                             </div>
 
                             {/* Content */}
-                            <div className="p-4">
-                                <h3 className="font-heading font-bold text-lg text-ink-black line-clamp-2 mb-2">
+                            <div className="p-5">
+                                <h3 className="font-serif text-lg text-elegant-black line-clamp-2 mb-2">
                                     {post.title}
                                 </h3>
-                                <p className="text-gray-500 text-sm line-clamp-3 mb-4">
+                                <p className="text-elegant-gray text-sm line-clamp-3 mb-4">
                                     {post.content.substring(0, 150)}...
                                 </p>
 
-                                <div className="flex items-center justify-between text-xs text-gray-400">
+                                <div className="flex items-center justify-between text-xs text-elegant-light">
                                     <span className="flex items-center gap-1">
                                         <Calendar size={12} /> {formatDate(post.createdAt)}
                                     </span>
-                                    <span className="text-primary-craft font-heading flex items-center gap-1">
+                                    <span className="text-elegant-black font-medium flex items-center gap-1 group-hover:underline">
                                         Leer más <ArrowRight size={12} />
                                     </span>
                                 </div>

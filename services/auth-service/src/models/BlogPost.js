@@ -23,6 +23,9 @@ const blogPostSchema = new mongoose.Schema({
     }],
     imageUrl: {
         type: String
+    },
+    videoUrl: {
+        type: String  // YouTube or TikTok URL
     }
 }, { timestamps: true });
 

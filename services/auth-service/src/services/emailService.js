@@ -112,5 +112,51 @@ const sendPasswordResetEmail = async (email, code, username) => {
     }
 };
 
-module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+// Blog notification HTML template
+const getBlogNotificationHtml = (postTitle, username) => `
+    <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #f5f3ef; border-radius: 20px;">
+        <h1 style="color: #1a1a1a; text-align: center; font-size: 24px; font-family: 'Playfair Display', serif;">Nuevo Post en LoreNotes</h1>
+        <p style="color: #6b6b6b; font-size: 16px;">Hola <strong>${username}</strong>,</p>
+        <p style="color: #6b6b6b; font-size: 16px;">¡Acabamos de publicar un nuevo post en nuestro blog!</p>
+        <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0;">
+            <h2 style="font-size: 20px; color: #1a1a1a; margin: 0;">${postTitle}</h2>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="https://lore-notes-blond.vercel.app/blog" style="background: #1a1a1a; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; display: inline-block;">Ver Post</a>
+        </div>
+        <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">Si no deseas recibir estas notificaciones, puedes desactivarlas en tu perfil.</p>
+    </div>
+`;
 
+// Send blog notification email
+const sendBlogNotificationEmail = async (email, postTitle, username) => {
+    const apiKey = process.env.BREVO_API_KEY;
+    const senderEmail = process.env.BREVO_SENDER || 'noreply@lorenotes.com';
+
+    if (!apiKey) {
+        console.log(`⚠️ BREVO_API_KEY not configured - skipping blog notification to ${email}`);
+        return false;
+    }
+
+    const SibApiV3Sdk = require('@getbrevo/brevo');
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+
+    const sendSmtpEmail = {
+        sender: { name: 'LoreNotes', email: senderEmail },
+        to: [{ email: email }],
+        subject: `📝 Nuevo post: ${postTitle}`,
+        htmlContent: getBlogNotificationHtml(postTitle, username)
+    };
+
+    try {
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`✅ Blog notification sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error(`❌ Blog notification error to ${email}: ${error.message}`);
+        return false;
+    }
+};
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendBlogNotificationEmail };
