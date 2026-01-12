@@ -203,36 +203,36 @@ export const AdminDashboard = () => {
         } catch (err) { console.error('Delete blog error:', err); }
     };
 
-    if (loading) return <div className="text-center text-xl font-heading p-8">Cargando...</div>;
+    if (loading) return <div className="text-center text-xl font-serif p-8 text-elegant-gray">Cargando...</div>;
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-4 md:space-y-6 px-2 md:px-0">
+        <div className="space-y-4 md:space-y-6 px-4 md:px-0 py-8 max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
-                className="bg-gradient-to-r from-primary-craft to-secondary-craft p-4 md:p-6 rounded-xl border-4 border-ink-black"
+                className="mb-8"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-xl md:text-3xl font-heading text-white">Panel Admin 🎨</h1>
-                <p className="text-white/80 text-sm">Gestiona plantillas y blog</p>
+                <h1 className="text-3xl md:text-4xl font-serif text-elegant-black">Panel Admin</h1>
+                <p className="text-elegant-gray">Gestiona plantillas y blog</p>
             </motion.div>
 
             {/* Tabs */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-6">
                 <button
                     onClick={() => setActiveTab('templates')}
-                    className={`px-4 py-2 rounded-lg font-heading border-2 transition-all flex items-center gap-2
-                        ${activeTab === 'templates' ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300'}`}
+                    className={`px-5 py-2 rounded-full font-medium transition-all flex items-center gap-2
+                        ${activeTab === 'templates' ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                 >
-                    <FileText size={18} /> Plantillas
+                    <FileText size={16} /> Plantillas
                 </button>
                 <button
                     onClick={() => setActiveTab('blog')}
-                    className={`px-4 py-2 rounded-lg font-heading border-2 transition-all flex items-center gap-2
-                        ${activeTab === 'blog' ? 'bg-primary-craft text-white border-primary-craft' : 'bg-white border-gray-300'}`}
+                    className={`px-5 py-2 rounded-full font-medium transition-all flex items-center gap-2
+                        ${activeTab === 'blog' ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                 >
-                    <BookOpen size={18} /> Blog
+                    <BookOpen size={16} /> Blog
                 </button>
             </div>
 
@@ -240,7 +240,7 @@ export const AdminDashboard = () => {
             {activeTab === 'templates' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                     {/* Upload/Edit Form */}
-                    <motion.div className="bg-white/95 p-4 md:p-6 rounded-xl border-4 border-ink-black shadow-lg">
+                    <motion.div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
                         <h2 className="text-lg md:text-xl font-heading mb-4 flex items-center gap-2">
                             {editingTemplate ? <><Edit size={20} /> Editar Plantilla</> : <><Upload size={20} /> Nueva Plantilla</>}
                         </h2>
@@ -313,13 +313,13 @@ export const AdminDashboard = () => {
                     </motion.div>
 
                     {/* Templates List */}
-                    <motion.div className="bg-white/95 p-4 md:p-6 rounded-xl border-4 border-ink-black shadow-lg">
-                        <h2 className="text-lg md:text-xl font-heading mb-4">Plantillas ({templates.length})</h2>
+                    <motion.div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                        <h2 className="text-lg md:text-xl font-serif mb-4">Plantillas ({templates.length})</h2>
                         <div className="space-y-2 max-h-[500px] overflow-y-auto">
                             {templates.length === 0 ? (
-                                <p className="text-gray-500 text-center py-8">No hay plantillas</p>
+                                <p className="text-elegant-gray text-center py-8">No hay plantillas</p>
                             ) : templates.map((t) => (
-                                <div key={t.id} className="flex items-center justify-between p-3 bg-paper-white rounded-lg border-2 border-dashed border-gray-300">
+                                <div key={t.id} className="flex items-center justify-between p-3 bg-cream rounded-xl">
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-heading font-bold text-sm truncate">{t.title}</h3>
                                         <p className="text-xs text-gray-500">{t.category} • ${t.price?.toFixed(2)}</p>
@@ -343,9 +343,9 @@ export const AdminDashboard = () => {
             {activeTab === 'blog' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                     {/* Blog Editor */}
-                    <motion.div className="bg-white/95 p-4 md:p-6 rounded-xl border-4 border-ink-black shadow-lg">
+                    <motion.div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg md:text-xl font-heading flex items-center gap-2">
+                            <h2 className="text-lg md:text-xl font-serif flex items-center gap-2">
                                 {editingBlog?._id ? <><Edit size={20} /> Editar Post</> : <><Plus size={20} /> Nuevo Post</>}
                             </h2>
                             {!editingBlog && (

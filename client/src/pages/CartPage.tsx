@@ -1,5 +1,4 @@
 import { useCart } from '../context/CartContext';
-import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Trash2, Check, Package } from 'lucide-react';
 import { useState } from 'react';
@@ -28,39 +27,42 @@ export const CartPage = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-heading text-ink-black mb-8 flex items-center gap-3">
-                <ShoppingCart size={36} />
+        <div className="max-w-3xl mx-auto px-4 py-8">
+            <h1 className="text-3xl md:text-4xl font-serif text-elegant-black mb-8 flex items-center gap-3">
+                <ShoppingCart size={32} strokeWidth={1.5} />
                 Mi Carrito
             </h1>
 
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-6 md:p-8 shadow-[8px_8px_0px_rgba(45,49,66,0.3)]"
+                className="bg-white rounded-2xl p-6 md:p-8 shadow-lg"
             >
                 {checkoutMessage.text && (
-                    <div className={`flex items-center gap-2 p-4 rounded-lg mb-6 ${checkoutMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <div className={`flex items-center gap-2 p-4 rounded-lg mb-6 text-sm ${checkoutMessage.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
                         }`}>
-                        <Check size={20} />
+                        <Check size={18} />
                         {checkoutMessage.text}
                     </div>
                 )}
 
                 {cart.length === 0 ? (
                     <div className="text-center py-12">
-                        <Package size={64} className="mx-auto text-gray-400 mb-4" />
-                        <h2 className="text-2xl font-heading text-gray-500 mb-4">Tu carrito está vacío</h2>
-                        <CraftButton variant="primary" onClick={() => navigate('/templates')}>
+                        <Package size={48} className="mx-auto text-elegant-light mb-4" />
+                        <h2 className="text-xl font-serif text-elegant-gray mb-6">Tu carrito está vacío</h2>
+                        <button
+                            onClick={() => navigate('/templates')}
+                            className="bg-elegant-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors"
+                        >
                             Ver Plantillas
-                        </CraftButton>
+                        </button>
                     </div>
                 ) : (
                     <>
                         {/* Cart Items */}
                         <div className="space-y-4 mb-8">
                             {cart.map((item) => (
-                                <div key={item.templateId} className="flex items-center justify-between p-4 bg-paper-white rounded-xl border-2 border-dashed border-gray-300">
+                                <div key={item.templateId} className="flex items-center justify-between p-4 bg-cream rounded-xl">
                                     <div className="flex items-center gap-4">
                                         <img
                                             src={`${TEMPLATES_URL}/${item.templateId}/image`}
@@ -71,39 +73,38 @@ export const CartPage = () => {
                                             }}
                                         />
                                         <div>
-                                            <h3 className="font-heading text-lg">{item.title}</h3>
-                                            <p className="text-primary-craft font-bold">${item.price?.toFixed(2)}</p>
+                                            <h3 className="font-medium text-elegant-black">{item.title}</h3>
+                                            <p className="text-elegant-black font-medium">${item.price?.toFixed(2)}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => handleRemove(item.templateId)}
-                                        className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-colors"
+                                        className="p-2 text-elegant-gray hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         disabled={isLoading}
                                     >
-                                        <Trash2 size={20} />
+                                        <Trash2 size={18} />
                                     </button>
                                 </div>
                             ))}
                         </div>
 
                         {/* Total & Checkout */}
-                        <div className="border-t-2 border-dashed border-gray-300 pt-6">
+                        <div className="border-t border-gray-100 pt-6">
                             <div className="flex justify-between items-center mb-6">
-                                <span className="text-xl font-heading">Total:</span>
-                                <span className="text-3xl font-heading text-primary-craft">${total.toFixed(2)}</span>
+                                <span className="text-lg text-elegant-gray">Total:</span>
+                                <span className="text-2xl font-serif text-elegant-black">${total.toFixed(2)}</span>
                             </div>
 
-                            <CraftButton
-                                variant="accent"
-                                className="w-full justify-center text-lg"
+                            <button
                                 onClick={handleCheckout}
                                 disabled={isLoading}
+                                className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isLoading ? 'Procesando...' : '🛒 Completar Compra'}
-                            </CraftButton>
+                                {isLoading ? 'Procesando...' : 'Completar Compra'}
+                            </button>
 
-                            <p className="text-center text-gray-500 text-sm mt-4">
-                                * Las plantillas estarán disponibles inmediatamente en "Mi Cuenta"
+                            <p className="text-center text-elegant-light text-sm mt-4">
+                                Las plantillas estarán disponibles inmediatamente en "Mi Cuenta"
                             </p>
                         </div>
                     </>
