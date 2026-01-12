@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Calendar, User, ArrowRight, ArrowLeft, Play } from 'lucide-react';
 import { BLOG_URL } from '../config';
 import { VideoEmbed } from '../components/VideoEmbed';
 
@@ -14,6 +14,24 @@ interface BlogPost {
     videoUrl?: string;
     imageUrl?: string;
 }
+
+// Extract YouTube video ID and get thumbnail
+const getYouTubeThumbnail = (url: string): string | null => {
+    if (!url) return null;
+
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+        /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+        }
+    }
+    return null;
+};
 
 export const BlogPage = () => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -118,55 +136,66 @@ export const BlogPage = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map((post, idx) => (
-                        <motion.article
-                            key={post._id}
-                            className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer group"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            onClick={() => setSelectedPost(post)}
-                        >
-                            {/* Image/Video placeholder */}
-                            <div className="h-48 bg-lavender-soft relative overflow-hidden">
-                                {post.imageUrl ? (
-                                    <img
-                                        src={post.imageUrl}
-                                        alt={post.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <span className="text-5xl opacity-30">📝</span>
-                                    </div>
-                                )}
-                                {post.videoUrl && (
-                                    <div className="absolute top-3 right-3 bg-elegant-black text-white px-2 py-1 rounded-full text-xs">
-                                        Video
-                                    </div>
-                                )}
-                            </div>
+                    {posts.map((post, idx) => {
+                        const videoThumbnail = post.videoUrl ? getYouTubeThumbnail(post.videoUrl) : null;
+                        const displayImage = post.imageUrl || videoThumbnail;
 
-                            {/* Content */}
-                            <div className="p-5">
-                                <h3 className="font-serif text-lg text-elegant-black line-clamp-2 mb-2">
-                                    {post.title}
-                                </h3>
-                                <p className="text-elegant-gray text-sm line-clamp-3 mb-4">
-                                    {post.content.substring(0, 150)}...
-                                </p>
-
-                                <div className="flex items-center justify-between text-xs text-elegant-light">
-                                    <span className="flex items-center gap-1">
-                                        <Calendar size={12} /> {formatDate(post.createdAt)}
-                                    </span>
-                                    <span className="text-elegant-black font-medium flex items-center gap-1 group-hover:underline">
-                                        Leer más <ArrowRight size={12} />
-                                    </span>
+                        return (
+                            <motion.article
+                                key={post._id}
+                                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer group"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                onClick={() => setSelectedPost(post)}
+                            >
+                                {/* Image/Video Thumbnail */}
+                                <div className="h-48 bg-lavender-soft relative overflow-hidden">
+                                    {displayImage ? (
+                                        <img
+                                            src={displayImage}
+                                            alt={post.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            onError={(e) => {
+                                                // Fallback if thumbnail doesn't load
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <span className="text-5xl opacity-30">📝</span>
+                                        </div>
+                                    )}
+                                    {post.videoUrl && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center">
+                                                <Play size={24} className="text-elegant-black ml-1" fill="currentColor" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        </motion.article>
-                    ))}
+
+                                {/* Content */}
+                                <div className="p-5">
+                                    <h3 className="font-serif text-lg text-elegant-black line-clamp-2 mb-2">
+                                        {post.title}
+                                    </h3>
+                                    <p className="text-elegant-gray text-sm line-clamp-3 mb-4">
+                                        {post.content.substring(0, 150)}...
+                                    </p>
+
+                                    <div className="flex items-center justify-between text-xs text-elegant-light">
+                                        <span className="flex items-center gap-1">
+                                            <Calendar size={12} /> {formatDate(post.createdAt)}
+                                        </span>
+                                        <span className="text-elegant-black font-medium flex items-center gap-1 group-hover:underline">
+                                            Leer más <ArrowRight size={12} />
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.article>
+                        );
+                    })}
                 </div>
             )}
         </div>
