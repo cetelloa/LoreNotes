@@ -28,6 +28,10 @@ router.delete('/cart/:templateId', authMiddleware, authController.removeFromCart
 router.post('/checkout', authMiddleware, authController.checkout);
 router.get('/purchases', authMiddleware, authController.getPurchases);
 
+// PayPal Payments
+router.post('/paypal/create-order', authMiddleware, authController.createPayPalOrder);
+router.post('/paypal/capture-order', authMiddleware, authController.capturePayPalOrder);
+
 // Notification Preferences
 router.put('/notifications', authMiddleware, authController.updateNotificationPreferences);
 router.get('/subscribed-users', authMiddleware, authController.getSubscribedUsers);

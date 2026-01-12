@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { sendVerificationEmail } = require('../services/emailService');
+const paypalService = require('../services/paypalService');
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -403,6 +404,85 @@ exports.getPurchases = async (req, res) => {
     } catch (error) {
         console.error('Get purchases error:', error);
         res.status(500).json({ message: 'Error al obtener compras' });
+    }
+};
+
+// ========== PAYPAL PAYMENTS ==========
+
+// Create PayPal order
+exports.createPayPalOrder = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user.cart || user.cart.length === 0) {
+            return res.status(400).json({ message: 'El carrito está vacío' });
+        }
+
+        // Check if PayPal is configured
+        if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+            return res.status(500).json({ message: 'PayPal no está configurado' });
+        }
+
+        const order = await paypalService.createOrder(user.cart, user._id.toString());
+
+        res.json({
+            orderId: order.id,
+            status: order.status,
+            total: order.total
+        });
+
+    } catch (error) {
+        console.error('Create PayPal order error:', error);
+        res.status(500).json({ message: error.message || 'Error al crear orden de PayPal' });
+    }
+};
+
+// Capture PayPal payment
+exports.capturePayPalOrder = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        if (!orderId) {
+            return res.status(400).json({ message: 'Order ID requerido' });
+        }
+
+        // Capture the payment
+        const capture = await paypalService.capturePayment(orderId);
+
+        if (capture.status !== 'COMPLETED') {
+            return res.status(400).json({ message: 'Pago no completado', status: capture.status });
+        }
+
+        // Payment successful - move cart to purchased
+        const user = await User.findById(req.user.id);
+        const purchaseDate = new Date();
+        const total = user.cart.reduce((sum, item) => sum + (item.price || 0), 0);
+
+        for (const item of user.cart) {
+            user.purchasedTemplates.push({
+                templateId: item.templateId,
+                title: item.title,
+                price: item.price,
+                purchaseDate,
+                paypalOrderId: orderId
+            });
+        }
+
+        // Clear cart
+        user.cart = [];
+        await user.save();
+
+        res.json({
+            message: '¡Pago exitoso! Gracias por tu compra.',
+            paypalOrderId: orderId,
+            total,
+            purchasedCount: user.purchasedTemplates.length,
+            payerEmail: capture.payer?.email
+        });
+
+    } catch (error) {
+        console.error('Capture PayPal order error:', error);
+        res.status(500).json({ message: error.message || 'Error al procesar el pago' });
     }
 };
 

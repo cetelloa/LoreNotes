@@ -15,6 +15,7 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AccountPage } from './pages/AccountPage';
 import { CartPage } from './pages/CartPage';
+import { CheckoutPage } from './pages/CheckoutPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
@@ -68,6 +69,11 @@ function App() {
                   <Route path="/cart" element={
                     <ProtectedRoute>
                       <CartPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/checkout" element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin" element={
