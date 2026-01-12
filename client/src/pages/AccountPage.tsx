@@ -375,43 +375,68 @@ export const AccountPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
-            {/* Profile Header */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-                <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-lavender-soft flex items-center justify-center text-4xl">
-                        {avatarUrl || '👤'}
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-serif text-elegant-black">
-                            {fullName || user?.username || 'Usuario'}
-                        </h1>
-                        <p className="text-elegant-gray text-sm">@{user?.username}</p>
-                        {bio && <p className="text-elegant-gray text-sm mt-1">{bio}</p>}
+            {/* Profile Header - Facebook Style */}
+            <div className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
+                {/* Cover Banner */}
+                <div className="h-32 md:h-40 bg-gradient-to-r from-lavender-soft via-pink-100 to-amber-50 relative">
+                    {/* Decorative pattern */}
+                    <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-4 left-8 text-4xl">✨</div>
+                        <div className="absolute top-8 right-12 text-3xl">🌸</div>
+                        <div className="absolute bottom-4 left-1/4 text-2xl">🎨</div>
+                        <div className="absolute bottom-6 right-1/4 text-3xl">📚</div>
                     </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
-                    <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 text-elegant-gray mb-1">
-                            <Calendar size={14} />
+                {/* Avatar - Overlapping */}
+                <div className="relative px-6">
+                    <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 md:left-6 md:translate-x-0">
+                        <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-white p-1 shadow-lg">
+                            <div className="w-full h-full rounded-full bg-lavender-soft flex items-center justify-center overflow-hidden">
+                                {isImageAvatar(avatarUrl) ? (
+                                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-5xl md:text-6xl">{avatarUrl || '👤'}</span>
+                                )}
+                            </div>
                         </div>
-                        <p className="text-sm font-medium text-elegant-black">Miembro desde</p>
-                        <p className="text-xs text-elegant-gray">{formatDate(user?.createdAt)}</p>
                     </div>
-                    <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 text-elegant-gray mb-1">
-                            <ShoppingBag size={14} />
-                        </div>
-                        <p className="text-sm font-medium text-elegant-black">Plantillas</p>
-                        <p className="text-xs text-elegant-gray">{user?.purchasedCount || 0} compradas</p>
+                </div>
+
+                {/* Profile Info */}
+                <div className="pt-16 md:pt-4 md:pl-44 px-6 pb-6">
+                    <div className="text-center md:text-left">
+                        <h1 className="text-2xl md:text-3xl font-serif text-elegant-black">
+                            {fullName || user?.username || 'Usuario'}
+                        </h1>
+                        <p className="text-elegant-gray">@{user?.username}</p>
+                        {bio && (
+                            <p className="text-elegant-gray text-sm mt-2 max-w-md">{bio}</p>
+                        )}
                     </div>
-                    <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 text-elegant-gray mb-1">
-                            <Globe size={14} />
+
+                    {/* Stats Row */}
+                    <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                            <Calendar size={16} className="text-elegant-gray" />
+                            <div>
+                                <span className="text-sm text-elegant-black font-medium">Miembro desde </span>
+                                <span className="text-sm text-elegant-gray">{formatDate(user?.createdAt)}</span>
+                            </div>
                         </div>
-                        <p className="text-sm font-medium text-elegant-black">País</p>
-                        <p className="text-xs text-elegant-gray">{country || 'No especificado'}</p>
+                        <div className="flex items-center gap-2">
+                            <ShoppingBag size={16} className="text-elegant-gray" />
+                            <div>
+                                <span className="text-sm text-elegant-black font-medium">{user?.purchasedCount || 0}</span>
+                                <span className="text-sm text-elegant-gray"> plantillas</span>
+                            </div>
+                        </div>
+                        {country && (
+                            <div className="flex items-center gap-2">
+                                <Globe size={16} className="text-elegant-gray" />
+                                <span className="text-sm text-elegant-gray">{country}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
