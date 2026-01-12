@@ -1,8 +1,29 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight, ArrowLeft, Play } from 'lucide-react';
+import { Calendar, User, ArrowRight, ArrowLeft, Play, Send, MessageCircle } from 'lucide-react';
 import { BLOG_URL } from '../config';
 import { VideoEmbed } from '../components/VideoEmbed';
+import { useAuth } from '../context/AuthContext';
+
+interface Reply {
+    _id: string;
+    userId: string;
+    username: string;
+    avatarUrl?: string;
+    content: string;
+    isAdmin: boolean;
+    createdAt: string;
+}
+
+interface Comment {
+    _id: string;
+    userId: string;
+    username: string;
+    avatarUrl?: string;
+    content: string;
+    replies: Reply[];
+    createdAt: string;
+}
 
 interface BlogPost {
     _id: string;
@@ -13,6 +34,7 @@ interface BlogPost {
     isPublished: boolean;
     videoUrl?: string;
     imageUrl?: string;
+    comments?: Comment[];
 }
 
 // Extract YouTube video ID and get thumbnail
@@ -33,10 +55,20 @@ const getYouTubeThumbnail = (url: string): string | null => {
     return null;
 };
 
+// Check if avatar is base64 image
+const isImageAvatar = (url?: string) => url?.startsWith('data:image');
+
 export const BlogPage = () => {
+    const { isAuthenticated, isAdmin, user, token } = useAuth();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+
+    // Comment state
+    const [newComment, setNewComment] = useState('');
+    const [commentLoading, setCommentLoading] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [replyContent, setReplyContent] = useState('');
 
     useEffect(() => {
         fetchPosts();
@@ -55,12 +87,85 @@ export const BlogPage = () => {
         setLoading(false);
     };
 
+    const fetchPost = async (postId: string) => {
+        try {
+            const res = await fetch(`${BLOG_URL}/${postId}`);
+            if (res.ok) {
+                const post = await res.json();
+                setSelectedPost(post);
+            }
+        } catch (error) {
+            console.error('Error fetching post:', error);
+        }
+    };
+
+    const handleAddComment = async () => {
+        if (!newComment.trim() || !selectedPost) return;
+
+        setCommentLoading(true);
+        try {
+            const res = await fetch(`${BLOG_URL}/${selectedPost._id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ content: newComment })
+            });
+
+            if (res.ok) {
+                setNewComment('');
+                fetchPost(selectedPost._id); // Refresh post to get new comment
+            }
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
+        setCommentLoading(false);
+    };
+
+    const handleAddReply = async (commentId: string) => {
+        if (!replyContent.trim() || !selectedPost) return;
+
+        setCommentLoading(true);
+        try {
+            const res = await fetch(`${BLOG_URL}/${selectedPost._id}/comments/${commentId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ content: replyContent })
+            });
+
+            if (res.ok) {
+                setReplyContent('');
+                setReplyingTo(null);
+                fetchPost(selectedPost._id); // Refresh
+            }
+        } catch (error) {
+            console.error('Error adding reply:', error);
+        }
+        setCommentLoading(false);
+    };
+
     const formatDate = (dateStr: string) => {
         return new Date(dateStr).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         });
+    };
+
+    const formatTimeAgo = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `hace ${days}d`;
+        if (hours > 0) return `hace ${hours}h`;
+        return 'ahora';
     };
 
     if (loading) {
@@ -72,7 +177,7 @@ export const BlogPage = () => {
         );
     }
 
-    // Single post view
+    // Single post view with comments
     if (selectedPost) {
         return (
             <div className="max-w-4xl mx-auto px-4 py-8">
@@ -84,7 +189,7 @@ export const BlogPage = () => {
                 </button>
 
                 <motion.article
-                    className="bg-white rounded-2xl p-6 md:p-10 shadow-lg"
+                    className="bg-white rounded-2xl p-6 md:p-10 shadow-lg mb-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
@@ -116,6 +221,156 @@ export const BlogPage = () => {
                         ))}
                     </div>
                 </motion.article>
+
+                {/* Comments Section */}
+                <motion.div
+                    className="bg-white rounded-2xl p-6 md:p-8 shadow-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <h2 className="text-xl font-serif text-elegant-black mb-6 flex items-center gap-2">
+                        <MessageCircle size={20} />
+                        Comentarios ({selectedPost.comments?.length || 0})
+                    </h2>
+
+                    {/* Comment Form */}
+                    {isAuthenticated ? (
+                        <div className="mb-6">
+                            <div className="flex gap-3">
+                                <div className="w-10 h-10 rounded-full bg-lavender-soft flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    {isImageAvatar(user?.avatarUrl) ? (
+                                        <img src={user?.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-lg">{user?.avatarUrl || '👤'}</span>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <textarea
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="Escribe un comentario..."
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 resize-none"
+                                        rows={3}
+                                        maxLength={1000}
+                                    />
+                                    <div className="flex justify-end mt-2">
+                                        <button
+                                            onClick={handleAddComment}
+                                            disabled={commentLoading || !newComment.trim()}
+                                            className="flex items-center gap-2 bg-elegant-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                        >
+                                            <Send size={14} /> Comentar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="mb-6 p-4 bg-cream rounded-xl text-center">
+                            <p className="text-elegant-gray">
+                                <a href="/login" className="text-elegant-black font-medium underline">Inicia sesión</a> para comentar
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Comments List */}
+                    {selectedPost.comments && selectedPost.comments.length > 0 ? (
+                        <div className="space-y-6">
+                            {selectedPost.comments.map((comment) => (
+                                <div key={comment._id} className="border-b border-gray-100 pb-6 last:border-0">
+                                    {/* Comment */}
+                                    <div className="flex gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-lavender-soft flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            {isImageAvatar(comment.avatarUrl) ? (
+                                                <img src={comment.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-lg">{comment.avatarUrl || '👤'}</span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-medium text-elegant-black">{comment.username}</span>
+                                                <span className="text-xs text-elegant-light">{formatTimeAgo(comment.createdAt)}</span>
+                                            </div>
+                                            <p className="text-elegant-gray">{comment.content}</p>
+
+                                            {/* Admin Reply Button */}
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                                                    className="text-xs text-elegant-gray hover:text-elegant-black mt-2"
+                                                >
+                                                    Responder
+                                                </button>
+                                            )}
+
+                                            {/* Reply Form (Admin only) */}
+                                            {isAdmin && replyingTo === comment._id && (
+                                                <div className="mt-3 pl-4 border-l-2 border-lavender-soft">
+                                                    <textarea
+                                                        value={replyContent}
+                                                        onChange={(e) => setReplyContent(e.target.value)}
+                                                        placeholder="Escribe una respuesta..."
+                                                        className="w-full p-2 bg-cream rounded-lg text-sm text-elegant-black focus:outline-none resize-none"
+                                                        rows={2}
+                                                    />
+                                                    <div className="flex gap-2 mt-2">
+                                                        <button
+                                                            onClick={() => handleAddReply(comment._id)}
+                                                            disabled={commentLoading}
+                                                            className="bg-elegant-black text-white px-3 py-1 rounded-full text-xs"
+                                                        >
+                                                            Enviar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setReplyingTo(null); setReplyContent(''); }}
+                                                            className="text-xs text-elegant-gray"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Replies */}
+                                            {comment.replies && comment.replies.length > 0 && (
+                                                <div className="mt-4 space-y-3">
+                                                    {comment.replies.map((reply) => (
+                                                        <div key={reply._id} className="flex gap-3 pl-4 border-l-2 border-lavender-soft">
+                                                            <div className="w-8 h-8 rounded-full bg-lavender-soft flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                                {isImageAvatar(reply.avatarUrl) ? (
+                                                                    <img src={reply.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <span className="text-sm">{reply.avatarUrl || '👤'}</span>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="font-medium text-elegant-black text-sm">{reply.username}</span>
+                                                                    {reply.isAdmin && (
+                                                                        <span className="text-xs bg-elegant-black text-white px-2 py-0.5 rounded-full">Admin</span>
+                                                                    )}
+                                                                    <span className="text-xs text-elegant-light">{formatTimeAgo(reply.createdAt)}</span>
+                                                                </div>
+                                                                <p className="text-elegant-gray text-sm">{reply.content}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <MessageCircle size={32} className="mx-auto text-elegant-light mb-2" />
+                            <p className="text-elegant-gray">No hay comentarios aún. ¡Sé el primero!</p>
+                        </div>
+                    )}
+                </motion.div>
             </div>
         );
     }

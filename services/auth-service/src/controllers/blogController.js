@@ -147,11 +147,101 @@ const deletePost = async (req, res) => {
     }
 };
 
+// Add comment (any authenticated user)
+const addComment = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const postId = req.params.id;
+
+        // Get user from token
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ message: 'Debes iniciar sesión para comentar' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_12345');
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(401).json({ message: 'Usuario no encontrado' });
+
+        // Validate content
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ message: 'El comentario no puede estar vacío' });
+        }
+
+        const post = await BlogPost.findById(postId);
+        if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+        // Add comment
+        const newComment = {
+            userId: user._id,
+            username: user.username,
+            avatarUrl: user.avatarUrl,
+            content: content.trim(),
+            replies: []
+        };
+
+        post.comments.push(newComment);
+        await post.save();
+
+        res.status(201).json({
+            message: 'Comentario agregado',
+            comment: post.comments[post.comments.length - 1]
+        });
+    } catch (error) {
+        console.error('Add comment error:', error);
+        res.status(500).json({ message: 'Error al agregar comentario', error: error.message });
+    }
+};
+
+// Add reply to comment (admin only)
+const addReply = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const { postId, commentId } = req.params;
+
+        // req.user is set by verifyAdmin middleware
+        const user = req.user;
+
+        // Validate content
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ message: 'La respuesta no puede estar vacía' });
+        }
+
+        const post = await BlogPost.findById(postId);
+        if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+        // Find the comment
+        const comment = post.comments.id(commentId);
+        if (!comment) return res.status(404).json({ message: 'Comentario no encontrado' });
+
+        // Add reply
+        const newReply = {
+            userId: user._id,
+            username: user.username,
+            avatarUrl: user.avatarUrl,
+            content: content.trim(),
+            isAdmin: true
+        };
+
+        comment.replies.push(newReply);
+        await post.save();
+
+        res.status(201).json({
+            message: 'Respuesta agregada',
+            reply: comment.replies[comment.replies.length - 1]
+        });
+    } catch (error) {
+        console.error('Add reply error:', error);
+        res.status(500).json({ message: 'Error al agregar respuesta', error: error.message });
+    }
+};
+
 module.exports = {
     verifyAdmin,
     getAllPosts,
     getPost,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    addComment,
+    addReply
 };
+
