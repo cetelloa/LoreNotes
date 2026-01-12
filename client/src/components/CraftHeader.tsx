@@ -5,10 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useState } from 'react';
 
+// Check if avatar is a base64 image
+const isImageAvatar = (url?: string) => url?.startsWith('data:image');
+
 export const CraftHeader = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { isAuthenticated, isAdmin, logout } = useAuth();
+    const { isAuthenticated, isAdmin, logout, user } = useAuth();
     const { cartCount } = useCart();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,6 +27,9 @@ export const CraftHeader = () => {
         navigate('/login');
         setMobileMenuOpen(false);
     };
+
+    // Get avatar display
+    const avatarUrl = user?.avatarUrl;
 
     return (
         <header className="relative z-50 bg-cream">
@@ -59,15 +65,22 @@ export const CraftHeader = () => {
                             );
                         })}
 
-                        {/* User Menu with Dropdown */}
+                        {/* User Menu with Avatar Dropdown */}
                         {isAuthenticated && (
                             <div className="relative">
                                 <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="flex items-center gap-1 text-sm text-elegant-gray hover:text-elegant-black transition-colors"
+                                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                                 >
-                                    Cuenta
-                                    <ChevronDown size={14} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                    {/* Avatar */}
+                                    <div className="w-9 h-9 rounded-full bg-lavender-soft flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                                        {isImageAvatar(avatarUrl) ? (
+                                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-lg">{avatarUrl || '👤'}</span>
+                                        )}
+                                    </div>
+                                    <ChevronDown size={14} className={`text-elegant-gray transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
                                 <AnimatePresence>
