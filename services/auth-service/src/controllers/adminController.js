@@ -60,7 +60,15 @@ exports.getMe = async (req, res) => {
             email: user.email,
             role: user.role,
             isVerified: user.isVerified,
-            emailNotifications: user.emailNotifications ?? true
+            emailNotifications: user.emailNotifications ?? true,
+            avatarUrl: user.avatarUrl,
+            fullName: user.fullName,
+            bio: user.bio,
+            country: user.country,
+            socialLinks: user.socialLinks || {},
+            favoriteCategories: user.favoriteCategories || [],
+            createdAt: user.createdAt,
+            purchasedCount: user.purchasedTemplates?.length || 0
         });
 
     } catch (error) {

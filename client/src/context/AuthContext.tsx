@@ -6,6 +6,18 @@ interface User {
     email: string;
     role: string;
     emailNotifications?: boolean;
+    avatarUrl?: string;
+    fullName?: string;
+    bio?: string;
+    country?: string;
+    socialLinks?: {
+        instagram?: string;
+        tiktok?: string;
+        portfolio?: string;
+    };
+    favoriteCategories?: string[];
+    createdAt?: string;
+    purchasedCount?: number;
 }
 
 interface AuthContextType {

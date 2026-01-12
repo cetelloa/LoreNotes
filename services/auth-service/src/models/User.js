@@ -62,8 +62,37 @@ const userSchema = new mongoose.Schema({
     // Email notification preferences
     emailNotifications: {
         type: Boolean,
-        default: true  // Enabled by default
+        default: true
     },
+    // Profile information
+    avatarUrl: {
+        type: String,
+        default: null
+    },
+    fullName: {
+        type: String,
+        default: null,
+        trim: true
+    },
+    bio: {
+        type: String,
+        default: null,
+        maxlength: 200
+    },
+    country: {
+        type: String,
+        default: null
+    },
+    // Social links
+    socialLinks: {
+        instagram: { type: String, default: null },
+        tiktok: { type: String, default: null },
+        portfolio: { type: String, default: null }
+    },
+    // Favorite categories
+    favoriteCategories: [{
+        type: String
+    }],
     createdAt: {
         type: Date,
         default: Date.now

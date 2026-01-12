@@ -190,10 +190,13 @@ exports.login = async (req, res) => {
 
 // ========== PROFILE MANAGEMENT ==========
 
-// Update profile (username, email)
+// Update profile (all fields)
 exports.updateProfile = async (req, res) => {
     try {
-        const { username, email } = req.body;
+        const {
+            username, email, fullName, bio, country,
+            avatarUrl, socialLinks, favoriteCategories
+        } = req.body;
         const userId = req.user.id;
 
         const user = await User.findById(userId);
@@ -219,6 +222,22 @@ exports.updateProfile = async (req, res) => {
             user.email = email;
         }
 
+        // Update profile fields
+        if (fullName !== undefined) user.fullName = fullName;
+        if (bio !== undefined) user.bio = bio;
+        if (country !== undefined) user.country = country;
+        if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+        if (favoriteCategories !== undefined) user.favoriteCategories = favoriteCategories;
+
+        // Update social links
+        if (socialLinks) {
+            user.socialLinks = {
+                instagram: socialLinks.instagram || user.socialLinks?.instagram || null,
+                tiktok: socialLinks.tiktok || user.socialLinks?.tiktok || null,
+                portfolio: socialLinks.portfolio || user.socialLinks?.portfolio || null
+            };
+        }
+
         await user.save();
 
         res.json({
@@ -227,7 +246,13 @@ exports.updateProfile = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                fullName: user.fullName,
+                bio: user.bio,
+                country: user.country,
+                avatarUrl: user.avatarUrl,
+                socialLinks: user.socialLinks,
+                favoriteCategories: user.favoriteCategories
             }
         });
 
