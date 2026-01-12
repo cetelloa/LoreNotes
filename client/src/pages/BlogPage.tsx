@@ -74,6 +74,17 @@ export const BlogPage = () => {
         fetchPosts();
     }, []);
 
+    // Polling for real-time updates
+    useEffect(() => {
+        if (!selectedPost) return;
+
+        const interval = setInterval(() => {
+            fetchPost(selectedPost._id);
+        }, 3000); // Poll every 3 seconds
+
+        return () => clearInterval(interval);
+    }, [selectedPost?._id]);
+
     const fetchPosts = async () => {
         try {
             const res = await fetch(BLOG_URL);
@@ -402,7 +413,7 @@ export const BlogPage = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.05 }}
-                                onClick={() => setSelectedPost(post)}
+                                onClick={() => fetchPost(post._id)}
                             >
                                 {/* Image/Video Thumbnail */}
                                 <div className="h-48 bg-lavender-soft relative overflow-hidden">
