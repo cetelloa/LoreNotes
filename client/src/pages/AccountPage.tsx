@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { User, Lock, Package, Download, Check, AlertCircle, Bell, Camera, Globe, Instagram, Link2, Calendar, ShoppingBag } from 'lucide-react';
+import { User, Lock, Package, Download, Check, AlertCircle, Bell, Globe, Instagram, Link2, Calendar, ShoppingBag } from 'lucide-react';
 import { AUTH_URL, TEMPLATES_URL } from '../config';
 
 interface Purchase {
@@ -304,8 +304,8 @@ export const AccountPage = () => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === tab.id
-                                ? 'bg-elegant-black text-white'
-                                : 'bg-cream text-elegant-gray hover:bg-cream-dark'
+                            ? 'bg-elegant-black text-white'
+                            : 'bg-cream text-elegant-gray hover:bg-cream-dark'
                             }`}
                     >
                         <tab.icon size={16} />
@@ -344,8 +344,8 @@ export const AccountPage = () => {
                                         type="button"
                                         onClick={() => setAvatarUrl(emoji)}
                                         className={`w-12 h-12 rounded-full text-2xl flex items-center justify-center transition-all ${avatarUrl === emoji
-                                                ? 'bg-elegant-black text-white scale-110'
-                                                : 'bg-cream hover:bg-cream-dark'
+                                            ? 'bg-elegant-black text-white scale-110'
+                                            : 'bg-cream hover:bg-cream-dark'
                                             }`}
                                     >
                                         {emoji}
@@ -526,8 +526,8 @@ export const AccountPage = () => {
                                         type="button"
                                         onClick={() => toggleCategory(cat)}
                                         className={`px-4 py-2 rounded-full text-sm transition-all ${favoriteCategories.includes(cat)
-                                                ? 'bg-elegant-black text-white'
-                                                : 'bg-cream text-elegant-gray hover:bg-cream-dark'
+                                            ? 'bg-elegant-black text-white'
+                                            : 'bg-cream text-elegant-gray hover:bg-cream-dark'
                                             }`}
                                     >
                                         {cat}
