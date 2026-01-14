@@ -192,6 +192,41 @@ export const HomePage = () => {
                 </div>
             </section>
 
+            {/* Donation Section */}
+            <section className="py-16 px-6">
+                <motion.div
+                    className="max-w-2xl mx-auto text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                >
+                    <div className="bg-gradient-to-br from-pink-50 via-white to-lavender-soft/50 rounded-3xl p-8 md:p-12 border-2 border-pink-200 shadow-lg">
+                        <div className="w-16 h-16 mx-auto mb-6 bg-pink-100 rounded-full flex items-center justify-center">
+                            <Heart size={32} className="text-pink-500" fill="currentColor" />
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-serif text-elegant-black mb-4">
+                            ¿Te gusta nuestro trabajo?
+                        </h2>
+                        <p className="text-elegant-gray mb-6 max-w-md mx-auto">
+                            Si nuestras plantillas te han sido útiles, considera apoyarnos con una pequeña donación.
+                            ¡Cada aporte nos ayuda a seguir creando contenido de calidad! ☕💖
+                        </p>
+                        <a
+                            href="https://www.paypal.com/donate/?hosted_button_id=TU_BOTON_ID"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-full font-medium hover:from-pink-600 hover:to-rose-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                            <Heart size={18} />
+                            Donar con PayPal
+                        </a>
+                        <p className="text-xs text-elegant-light mt-4">
+                            Serás redirigido a PayPal de forma segura
+                        </p>
+                    </div>
+                </motion.div>
+            </section>
+
             {/* CTA Section */}
             <section className="py-20 px-6 bg-lavender-soft/30">
                 <div className="max-w-3xl mx-auto text-center">
