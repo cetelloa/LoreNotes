@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { ShoppingBag, CheckCircle, AlertCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { ShoppingBag, CheckCircle, AlertCircle, ArrowLeft, CreditCard, Tag, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -18,7 +18,47 @@ export const CheckoutPage = () => {
     const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
 
-    const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponMessage, setCouponMessage] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+
+    const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+    const discount = subtotal * (couponDiscount / 100);
+    const total = subtotal - discount;
+
+    const validateCoupon = async () => {
+        if (!couponCode.trim()) return;
+
+        setCouponLoading(true);
+        setCouponMessage('');
+
+        try {
+            const res = await fetch(`${AUTH_URL}/coupons/validate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ code: couponCode })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.valid) {
+                setCouponDiscount(data.discountPercent);
+                setCouponMessage(`✅ ${data.message}`);
+            } else {
+                setCouponDiscount(0);
+                setCouponMessage(`❌ ${data.message}`);
+            }
+        } catch (error) {
+            setCouponMessage('❌ Error al validar cupón');
+        }
+
+        setCouponLoading(false);
+    };
 
     // Crear orden en nuestro backend
     const createOrder = async () => {
@@ -163,9 +203,48 @@ export const CheckoutPage = () => {
                                 ))}
                             </div>
 
-                            <div className="flex justify-between pt-4 border-t-2 border-elegant-black">
-                                <span className="text-lg font-serif text-elegant-black">Total</span>
-                                <span className="text-xl font-bold text-elegant-black">${total.toFixed(2)} USD</span>
+                            {/* Coupon Input */}
+                            <div className="pt-4 border-t border-gray-100">
+                                <div className="flex gap-2 mb-2">
+                                    <div className="flex-1 relative">
+                                        <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            value={couponCode}
+                                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                            placeholder="Código de cupón"
+                                            className="w-full pl-10 pr-4 py-2 bg-cream rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-elegant-black/10 uppercase"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={validateCoupon}
+                                        disabled={couponLoading || !couponCode.trim()}
+                                        className="px-4 py-2 bg-elegant-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                        {couponLoading ? <Loader2 size={16} className="animate-spin" /> : 'Aplicar'}
+                                    </button>
+                                </div>
+                                {couponMessage && (
+                                    <p className="text-sm text-elegant-gray">{couponMessage}</p>
+                                )}
+                            </div>
+
+                            {/* Totals */}
+                            <div className="pt-4 border-t-2 border-elegant-black space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-elegant-gray">Subtotal</span>
+                                    <span className="text-elegant-black">${subtotal.toFixed(2)}</span>
+                                </div>
+                                {couponDiscount > 0 && (
+                                    <div className="flex justify-between text-green-600">
+                                        <span>Descuento ({couponDiscount}%)</span>
+                                        <span>-${discount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between pt-2 border-t border-gray-200">
+                                    <span className="text-lg font-serif text-elegant-black">Total</span>
+                                    <span className="text-xl font-bold text-elegant-black">${total.toFixed(2)} USD</span>
+                                </div>
                             </div>
                         </motion.div>
 

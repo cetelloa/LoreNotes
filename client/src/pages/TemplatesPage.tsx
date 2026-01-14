@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +28,7 @@ export const TemplatesPage = () => {
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; template: Template | null }>({ isOpen: false, template: null });
     const [sortBy, setSortBy] = useState<'recent' | 'price-low' | 'price-high'>('recent');
+    const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
 
@@ -37,6 +38,7 @@ export const TemplatesPage = () => {
         fetchTemplates();
         if (isAuthenticated) {
             fetchPurchases();
+            fetchFavorites();
         }
     }, [isAuthenticated]);
 
@@ -64,6 +66,51 @@ export const TemplatesPage = () => {
             }
         } catch (error) {
             console.error('Error fetching purchases:', error);
+        }
+    };
+
+    const fetchFavorites = async () => {
+        try {
+            const res = await fetch(`${AUTH_URL}/favorites`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setFavoriteIds(new Set(data.favorites.map((f: { templateId: string }) => f.templateId)));
+            }
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+        }
+    };
+
+    const toggleFavorite = async (template: Template) => {
+        if (!isAuthenticated) return;
+
+        const isFavorite = favoriteIds.has(template.id);
+        try {
+            if (isFavorite) {
+                await fetch(`${AUTH_URL}/favorites/${template.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                setFavoriteIds(prev => {
+                    const next = new Set(prev);
+                    next.delete(template.id);
+                    return next;
+                });
+            } else {
+                await fetch(`${AUTH_URL}/favorites`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ templateId: template.id, title: template.title })
+                });
+                setFavoriteIds(prev => new Set([...prev, template.id]));
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
         }
     };
 
@@ -212,6 +259,18 @@ export const TemplatesPage = () => {
                                 <div className="absolute top-2 right-2 bg-accent-craft text-ink-black text-xs font-bold px-2 py-1 rounded-full border-2 border-ink-black">
                                     {getCategoryLabel(template.category)}
                                 </div>
+                                {isAuthenticated && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavorite(template);
+                                        }}
+                                        className={`absolute top-2 left-2 p-2 rounded-full border-2 border-ink-black transition-all ${favoriteIds.has(template.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-600 hover:bg-red-100'}`}
+                                        title={favoriteIds.has(template.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                    >
+                                        <Heart size={16} fill={favoriteIds.has(template.id) ? 'currentColor' : 'none'} />
+                                    </button>
+                                )}
                             </div>
 
                             {/* Content */}
