@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Heart, Cake, Briefcase, GraduationCap } from 'lucide-react';
+import { ArrowRight, Heart, FileText, Clock, BookOpen, Sparkles } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 
 interface Template {
@@ -16,21 +16,23 @@ interface Template {
 }
 
 const categories = [
-    { id: 'bodas', label: 'Bodas', icon: Heart },
-    { id: 'cumpleanos', label: 'Cumpleaños', icon: Cake },
-    { id: 'negocios', label: 'Negocios', icon: Briefcase },
-    { id: 'educacion', label: 'Educación', icon: GraduationCap },
+    { id: 'infografia', label: 'Infografía', icon: FileText },
+    { id: 'lineas_tiempo', label: 'Líneas de tiempo', icon: Clock },
+    { id: 'caratulas', label: 'Carátulas', icon: BookOpen },
+    { id: 'manualidades', label: 'Manualidades', icon: Sparkles },
 ];
 
 const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-        bodas: 'Bodas',
-        cumpleanos: 'Cumpleaños',
-        negocios: 'Negocios',
-        educacion: 'Educación',
+        infografia: 'Infografía',
+        lineas_tiempo: 'Líneas de tiempo',
+        caratulas: 'Carátulas',
+        manualidades: 'Manualidades',
+        separadores: 'Separadores',
+        mapas_mentales: 'Mapas mentales',
         otros: 'Otros'
     };
-    return labels[category] || 'General';
+    return labels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace(/_/g, ' ');
 };
 
 export const HomePage = () => {

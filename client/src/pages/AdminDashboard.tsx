@@ -393,10 +393,12 @@ export const AdminDashboard = () => {
                                     <select value={category} onChange={(e) => setCategory(e.target.value)}
                                         className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm">
                                         <option value="">Seleccionar</option>
-                                        <option value="bodas">Bodas</option>
-                                        <option value="cumpleanos">Cumpleaños</option>
-                                        <option value="negocios">Negocios</option>
-                                        <option value="educacion">Educación</option>
+                                        <option value="infografia">Infografía</option>
+                                        <option value="lineas_tiempo">Líneas de tiempo</option>
+                                        <option value="caratulas">Carátulas</option>
+                                        <option value="manualidades">Manualidades</option>
+                                        <option value="separadores">Separadores</option>
+                                        <option value="mapas_mentales">Mapas mentales</option>
                                         <option value="otros">Otros</option>
                                     </select>
                                 </div>

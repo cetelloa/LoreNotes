@@ -32,7 +32,7 @@ export const TemplatesPage = () => {
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
 
-    const categories = ['bodas', 'cumpleanos', 'negocios', 'educacion', 'otros'];
+    const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales', 'otros'];
 
     useEffect(() => {
         fetchTemplates();
@@ -176,13 +176,15 @@ export const TemplatesPage = () => {
 
     const getCategoryLabel = (cat: string) => {
         const labels: Record<string, string> = {
-            bodas: 'Bodas',
-            cumpleanos: 'Cumpleaños',
-            negocios: 'Negocios',
-            educacion: 'Educación',
+            infografia: 'Infografía',
+            lineas_tiempo: 'Líneas de tiempo',
+            caratulas: 'Carátulas',
+            manualidades: 'Manualidades',
+            separadores: 'Separadores',
+            mapas_mentales: 'Mapas mentales',
             otros: 'Otros'
         };
-        return labels[cat] || cat;
+        return labels[cat] || cat.charAt(0).toUpperCase() + cat.slice(1).replace(/_/g, ' ');
     };
 
     return (
