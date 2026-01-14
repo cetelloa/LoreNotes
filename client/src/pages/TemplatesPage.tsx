@@ -218,10 +218,10 @@ export const TemplatesPage = () => {
                 </div>
 
                 {/* Category Filter */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                     <button
                         onClick={() => setSelectedCategory('')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
                             ${!selectedCategory ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                     >
                         Todas
@@ -230,7 +230,7 @@ export const TemplatesPage = () => {
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
                                 ${selectedCategory === cat ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                         >
                             {getCategoryLabel(cat)}
