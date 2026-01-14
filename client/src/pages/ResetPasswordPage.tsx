@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, KeyRound, Eye, EyeOff, Check, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { CraftButton } from '../components/CraftButton';
 import { AUTH_URL } from '../config';
 
 export const ResetPasswordPage = () => {
@@ -62,119 +61,122 @@ export const ResetPasswordPage = () => {
 
     if (success) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
+                    initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="text-center p-10 bg-white/95 rounded-2xl border-4 border-ink-black shadow-[8px_8px_0px_rgba(45,49,66,0.3)]"
+                    className="bg-white rounded-2xl p-8 md:p-12 shadow-lg w-full max-w-md text-center"
                 >
-                    <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Check size={40} className="text-white" />
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Check size={40} className="text-green-600" />
                     </div>
-                    <h2 className="text-2xl font-heading text-ink-black mb-2">¡Contraseña actualizada!</h2>
-                    <p className="text-gray-600">Redirigiendo al login...</p>
+                    <h2 className="text-2xl font-serif text-elegant-black mb-2">¡Contraseña actualizada!</h2>
+                    <p className="text-elegant-gray">Redirigiendo al login...</p>
                 </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
             <motion.div
+                className="bg-white rounded-2xl p-8 md:p-12 shadow-lg w-full max-w-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-8 shadow-[8px_8px_0px_rgba(45,49,66,0.3)]"
             >
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <KeyRound size={32} className="text-white" />
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <KeyRound size={28} className="text-green-600" />
                     </div>
-                    <h1 className="text-2xl font-heading text-ink-black">Restablecer contraseña</h1>
-                    <p className="text-gray-600 mt-2">Ingresa el código que recibiste por email</p>
+                    <h2 className="text-3xl font-serif text-elegant-black mb-2">
+                        Nueva contraseña
+                    </h2>
+                    <p className="text-elegant-gray text-sm">
+                        Ingresa el código que recibiste
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {error && (
-                        <div className="p-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl text-center text-sm">
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                             {error}
                         </div>
                     )}
 
-                    <div className="p-3 bg-purple-50 rounded-xl text-center">
-                        <p className="text-sm text-gray-600">Código enviado a:</p>
-                        <p className="font-heading text-purple-700">{email}</p>
+                    <div className="bg-lavender-soft/50 p-3 rounded-xl text-center">
+                        <p className="text-xs text-elegant-gray">Código enviado a</p>
+                        <p className="text-elegant-black font-medium">{email}</p>
                     </div>
 
                     <div>
-                        <label className="flex items-center gap-2 font-heading mb-2 text-sm">
+                        <label className="block text-elegant-gray text-sm mb-2">
                             Código de 6 dígitos
                         </label>
                         <input
                             type="text"
                             value={code}
                             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="w-full p-4 border-2 border-dashed border-ink-black rounded-xl focus:border-primary-craft focus:outline-none transition-colors text-center text-2xl tracking-[0.5em] font-heading"
-                            placeholder="••••••"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black text-center text-2xl tracking-[0.4em] font-medium focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
+                            placeholder="• • • • • •"
                             maxLength={6}
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="flex items-center gap-2 font-heading mb-2 text-sm">
-                            <Lock size={16} /> Nueva contraseña
+                        <label className="flex items-center gap-2 text-elegant-gray text-sm mb-2">
+                            <Lock size={14} /> Nueva contraseña
                         </label>
                         <div className="relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl focus:border-primary-craft focus:outline-none transition-colors pr-12"
+                                className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all pr-12"
                                 placeholder="Mínimo 6 caracteres"
                                 required
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-elegant-light hover:text-elegant-gray"
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <label className="flex items-center gap-2 font-heading mb-2 text-sm">
-                            <Lock size={16} /> Confirmar contraseña
+                        <label className="flex items-center gap-2 text-elegant-gray text-sm mb-2">
+                            <Lock size={14} /> Confirmar contraseña
                         </label>
                         <input
                             type={showPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl focus:border-primary-craft focus:outline-none transition-colors"
+                            className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                             placeholder="Repite la contraseña"
                             required
                         />
                     </div>
 
-                    <CraftButton variant="primary" className="w-full justify-center" disabled={loading}>
-                        {loading ? (
-                            <span className="flex items-center gap-2">
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Actualizando...
-                            </span>
-                        ) : (
-                            'Restablecer contraseña'
-                        )}
-                    </CraftButton>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? 'Actualizando...' : 'Cambiar contraseña'}
+                    </button>
+                </form>
 
+                <p className="text-center mt-8">
                     <Link
                         to="/forgot-password"
-                        className="flex items-center justify-center gap-2 text-gray-500 hover:text-primary-craft transition-colors text-sm"
+                        className="inline-flex items-center gap-1 text-elegant-light hover:text-elegant-black transition-colors text-sm"
                     >
                         <ArrowLeft size={16} /> Reenviar código
                     </Link>
-                </form>
+                </p>
             </motion.div>
         </div>
     );

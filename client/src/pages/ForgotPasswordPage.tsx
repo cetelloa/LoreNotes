@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, ArrowLeft, Send } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CraftButton } from '../components/CraftButton';
 import { AUTH_URL } from '../config';
 
 export const ForgotPasswordPage = () => {
@@ -41,73 +40,74 @@ export const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
             <motion.div
+                className="bg-white rounded-2xl p-8 md:p-12 shadow-lg w-full max-w-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white/95 backdrop-blur-sm border-4 border-ink-black rounded-2xl p-8 shadow-[8px_8px_0px_rgba(45,49,66,0.3)]"
             >
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Mail size={32} className="text-white" />
+                    <div className="w-16 h-16 bg-lavender-soft rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Mail size={28} className="text-elegant-black" />
                     </div>
-                    <h1 className="text-2xl font-heading text-ink-black">¿Olvidaste tu contraseña?</h1>
-                    <p className="text-gray-600 mt-2">Te enviaremos un código para recuperarla</p>
+                    <h2 className="text-3xl font-serif text-elegant-black mb-2">
+                        Recuperar contraseña
+                    </h2>
+                    <p className="text-elegant-gray text-sm">
+                        Te enviaremos un código a tu correo
+                    </p>
                 </div>
 
                 {success ? (
                     <motion.div
-                        initial={{ scale: 0.9 }}
+                        initial={{ scale: 0.95 }}
                         animate={{ scale: 1 }}
-                        className="text-center p-6 bg-green-50 rounded-xl border-2 border-green-200"
+                        className="text-center p-6 bg-green-50 rounded-xl"
                     >
                         <div className="text-4xl mb-3">📧</div>
-                        <p className="text-green-700 font-heading">¡Código enviado!</p>
-                        <p className="text-green-600 text-sm mt-2">Revisa tu email y prepárate para ingresar el código...</p>
+                        <p className="text-green-700 font-medium">¡Código enviado!</p>
+                        <p className="text-green-600 text-sm mt-2">Revisa tu email...</p>
                     </motion.div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
-                            <div className="p-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl text-center text-sm">
+                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label className="flex items-center gap-2 font-heading mb-2">
-                                <Mail size={18} /> Email
+                            <label className="block text-elegant-gray text-sm mb-2">
+                                Email
                             </label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full p-3 border-2 border-dashed border-ink-black rounded-xl focus:border-primary-craft focus:outline-none transition-colors"
-                                placeholder="tu-email@ejemplo.com"
+                                className="w-full p-4 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
+                                placeholder="tu@email.com"
                                 required
                             />
                         </div>
 
-                        <CraftButton variant="primary" className="w-full justify-center" disabled={loading}>
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    Enviando...
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-2">
-                                    <Send size={18} /> Enviar código
-                                </span>
-                            )}
-                        </CraftButton>
-
-                        <Link
-                            to="/login"
-                            className="flex items-center justify-center gap-2 text-gray-500 hover:text-primary-craft transition-colors"
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-elegant-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <ArrowLeft size={18} /> Volver al login
-                        </Link>
+                            {loading ? 'Enviando...' : 'Enviar código'}
+                        </button>
                     </form>
                 )}
+
+                <p className="text-center mt-8">
+                    <Link
+                        to="/login"
+                        className="inline-flex items-center gap-1 text-elegant-light hover:text-elegant-black transition-colors text-sm"
+                    >
+                        <ArrowLeft size={16} /> Volver al login
+                    </Link>
+                </p>
             </motion.div>
         </div>
     );
