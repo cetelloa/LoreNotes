@@ -297,7 +297,7 @@ export const TemplatesPage = () => {
                             {/* PDF Preview */}
                             <div className="relative h-64 md:h-80 bg-gray-200">
                                 <iframe
-                                    src={`${TEMPLATES_URL}/${previewModal.template.id}/preview`}
+                                    src={`${TEMPLATES_URL}/${previewModal.template.id}/preview#toolbar=0&navpanes=0&scrollbar=0`}
                                     className="w-full h-full border-0"
                                     title={`Vista previa de ${previewModal.template.title}`}
                                 />
