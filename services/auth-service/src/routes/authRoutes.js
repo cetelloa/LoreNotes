@@ -57,4 +57,10 @@ router.post('/admin/coupons', authMiddleware, couponController.createCoupon);
 router.delete('/admin/coupons/:id', authMiddleware, couponController.deleteCoupon);
 router.patch('/admin/coupons/:id/toggle', authMiddleware, couponController.toggleCoupon);
 
+// Categories (public get, protected create/delete)
+const categoryController = require('../controllers/categoryController');
+router.get('/categories', categoryController.getCategories);
+router.post('/categories', authMiddleware, categoryController.createCategory);
+router.delete('/categories/:id', authMiddleware, categoryController.deleteCategory);
+
 module.exports = router;

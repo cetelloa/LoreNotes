@@ -32,15 +32,31 @@ export const TemplatesPage = () => {
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
 
-    const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales', 'otros'];
+    const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
+    const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
     useEffect(() => {
         fetchTemplates();
+        fetchDynamicCategories();
         if (isAuthenticated) {
             fetchPurchases();
             fetchFavorites();
         }
     }, [isAuthenticated]);
+
+    const fetchDynamicCategories = async () => {
+        try {
+            const res = await fetch(`${AUTH_URL}/categories`);
+            if (res.ok) {
+                const data = await res.json();
+                // Get unique slugs that are not in default categories
+                const customCats = data
+                    .filter((c: { slug: string; isDefault: boolean }) => !c.isDefault)
+                    .map((c: { slug: string }) => c.slug);
+                setDynamicCategories(customCats);
+            }
+        } catch (err) { console.error('Error fetching categories:', err); }
+    };
 
     const fetchTemplates = async () => {
         try {
@@ -227,6 +243,16 @@ export const TemplatesPage = () => {
                         Todas
                     </button>
                     {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
+                                ${selectedCategory === cat ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
+                        >
+                            {getCategoryLabel(cat)}
+                        </button>
+                    ))}
+                    {dynamicCategories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}

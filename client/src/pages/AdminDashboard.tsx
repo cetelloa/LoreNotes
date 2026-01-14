@@ -85,6 +85,8 @@ export const AdminDashboard = () => {
     const [purpose, setPurpose] = useState('');
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
+    const [availableCategories, setAvailableCategories] = useState<{ _id: string; name: string; slug: string; isDefault: boolean }[]>([]);
     const [tutorialVideoUrl, setTutorialVideoUrl] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [templateFile, setTemplateFile] = useState<File | null>(null);
@@ -93,6 +95,7 @@ export const AdminDashboard = () => {
     useEffect(() => {
         checkAdminStatus();
         fetchTemplates();
+        fetchCategories();
         fetchBlogPosts();
         fetchSales();
     }, [token]);
@@ -116,6 +119,16 @@ export const AdminDashboard = () => {
             const data = await res.json();
             setTemplates(data);
         } catch (err) { console.error('Error fetching templates:', err); }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch(`${AUTH_URL}/categories`);
+            if (res.ok) {
+                const data = await res.json();
+                setAvailableCategories(data);
+            }
+        } catch (err) { console.error('Error fetching categories:', err); }
     };
 
     const fetchBlogPosts = async () => {
@@ -220,13 +233,36 @@ export const AdminDashboard = () => {
         }
 
         setUploading(true);
+
+        // If custom category is provided, create it first
+        let finalCategory = category;
+        if (category === 'otros' && customCategory.trim()) {
+            try {
+                const catRes = await fetch(`${AUTH_URL}/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name: customCategory.trim() })
+                });
+                if (catRes.ok) {
+                    const catData = await catRes.json();
+                    finalCategory = catData.category.slug;
+                    fetchCategories(); // Refresh categories list
+                }
+            } catch (err) {
+                console.error('Error creating category:', err);
+            }
+        }
+
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('purpose', purpose);
         formData.append('price', price);
         formData.append('author', user?.username || 'Admin');
-        formData.append('category', category);
+        formData.append('category', finalCategory);
         if (tutorialVideoUrl) formData.append('tutorialVideoUrl', tutorialVideoUrl);
         if (imageFile) formData.append('image', imageFile);
         if (templateFile) formData.append('templateFile', templateFile);
@@ -390,17 +426,23 @@ export const AdminDashboard = () => {
                                 </div>
                                 <div>
                                     <label className="flex items-center gap-1 font-heading mb-1 text-xs"><Tag size={12} /> Categoría</label>
-                                    <select value={category} onChange={(e) => setCategory(e.target.value)}
+                                    <select value={category} onChange={(e) => { setCategory(e.target.value); if (e.target.value !== 'otros') setCustomCategory(''); }}
                                         className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm">
                                         <option value="">Seleccionar</option>
-                                        <option value="infografia">Infografía</option>
-                                        <option value="lineas_tiempo">Líneas de tiempo</option>
-                                        <option value="caratulas">Carátulas</option>
-                                        <option value="manualidades">Manualidades</option>
-                                        <option value="separadores">Separadores</option>
-                                        <option value="mapas_mentales">Mapas mentales</option>
-                                        <option value="otros">Otros</option>
+                                        {availableCategories.map(cat => (
+                                            <option key={cat._id} value={cat.slug}>{cat.name}</option>
+                                        ))}
+                                        <option value="otros">+ Otra categoría...</option>
                                     </select>
+                                    {category === 'otros' && (
+                                        <input
+                                            type="text"
+                                            value={customCategory}
+                                            onChange={(e) => setCustomCategory(e.target.value)}
+                                            placeholder="Escribe el nombre de la nueva categoría"
+                                            className="w-full p-2 mt-2 border-2 border-dashed border-green-500 rounded-lg text-sm"
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <div>
