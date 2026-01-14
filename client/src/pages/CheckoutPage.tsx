@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { ShoppingBag, CheckCircle, AlertCircle, ArrowLeft, CreditCard, Tag, Loader2 } from 'lucide-react';
+import { ShoppingBag, CheckCircle, AlertCircle, ArrowLeft, CreditCard, Tag, Loader2, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -27,6 +27,33 @@ export const CheckoutPage = () => {
     const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
     const discount = subtotal * (couponDiscount / 100);
     const total = subtotal - discount;
+    const isFreeOrder = total <= 0;
+
+    // Checkout gratis (sin PayPal)
+    const handleFreeCheckout = async () => {
+        setStatus('processing');
+        try {
+            const response = await fetch(`${AUTH_URL}/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setStatus('success');
+                setMessage('¡Plantillas obtenidas gratis!');
+                refreshCart();
+                setTimeout(() => navigate('/account'), 3000);
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage(error instanceof Error ? error.message : 'Error al procesar');
+        }
+    };
 
     const validateCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -279,8 +306,16 @@ export const CheckoutPage = () => {
                             {status === 'processing' ? (
                                 <div className="text-center py-8">
                                     <div className="animate-spin w-8 h-8 border-2 border-elegant-black border-t-transparent rounded-full mx-auto mb-4"></div>
-                                    <p className="text-elegant-gray">Procesando pago...</p>
+                                    <p className="text-elegant-gray">Procesando...</p>
                                 </div>
+                            ) : isFreeOrder ? (
+                                <button
+                                    onClick={handleFreeCheckout}
+                                    className="w-full bg-green-600 text-white py-4 rounded-full font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Gift size={20} />
+                                    Obtener Gratis
+                                </button>
                             ) : (
                                 <div className="paypal-buttons-container">
                                     <PayPalButtons
