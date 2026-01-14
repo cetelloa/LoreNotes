@@ -298,8 +298,14 @@ export const TemplatesPage = () => {
                             <div className="relative h-64 md:h-80 bg-gray-200">
                                 <iframe
                                     src={`${TEMPLATES_URL}/${previewModal.template.id}/preview#toolbar=0&navpanes=0&scrollbar=0`}
-                                    className="w-full h-full border-0"
+                                    className="w-full h-full border-0 pointer-events-none"
                                     title={`Vista previa de ${previewModal.template.title}`}
+                                />
+                                {/* Overlay to block right-click and interactions */}
+                                <div
+                                    className="absolute inset-0 z-5"
+                                    onContextMenu={(e) => e.preventDefault()}
+                                    style={{ userSelect: 'none' }}
                                 />
                                 <button
                                     onClick={() => setPreviewModal({ isOpen: false, template: null })}
@@ -307,7 +313,7 @@ export const TemplatesPage = () => {
                                 >
                                     <X size={20} />
                                 </button>
-                                <div className="absolute bottom-3 left-3 bg-accent-craft text-ink-black text-sm font-bold px-3 py-1 rounded-full border-2 border-ink-black">
+                                <div className="absolute bottom-3 left-3 bg-accent-craft text-ink-black text-sm font-bold px-3 py-1 rounded-full border-2 border-ink-black z-10">
                                     {getCategoryLabel(previewModal.template.category)}
                                 </div>
                             </div>
