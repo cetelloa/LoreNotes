@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -27,6 +27,7 @@ export const TemplatesPage = () => {
     const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; template: Template | null }>({ isOpen: false, template: null });
+    const [sortBy, setSortBy] = useState<'recent' | 'price-low' | 'price-high'>('recent');
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
 
@@ -75,6 +76,13 @@ export const TemplatesPage = () => {
         const matchesCategory = !selectedCategory || t.category === selectedCategory;
 
         return matchesSearch && matchesCategory;
+    });
+
+    // Apply sorting
+    const sortedTemplates = [...filteredTemplates].sort((a, b) => {
+        if (sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
+        if (sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
+        return 0; // recent = original order
     });
 
     const getImageUrl = (template: Template) => {
@@ -153,6 +161,20 @@ export const TemplatesPage = () => {
                         </button>
                     ))}
                 </div>
+
+                {/* Sort Options */}
+                <div className="flex items-center gap-2">
+                    <ArrowUpDown size={16} className="text-elegant-gray" />
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as 'recent' | 'price-low' | 'price-high')}
+                        className="bg-cream px-3 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-elegant-black/10"
+                    >
+                        <option value="recent">Recientes</option>
+                        <option value="price-low">Precio: Menor a Mayor</option>
+                        <option value="price-high">Precio: Mayor a Menor</option>
+                    </select>
+                </div>
             </motion.div>
 
             {/* Templates Grid */}
@@ -161,14 +183,14 @@ export const TemplatesPage = () => {
                     <div className="animate-spin w-12 h-12 border-4 border-primary-craft border-t-transparent rounded-full mx-auto"></div>
                     <p className="mt-4 text-gray-500">Cargando plantillas...</p>
                 </div>
-            ) : filteredTemplates.length === 0 ? (
+            ) : sortedTemplates.length === 0 ? (
                 <div className="text-center py-12 bg-white/90 rounded-xl border-4 border-ink-black">
                     <p className="text-xl text-gray-500">No se encontraron plantillas 😢</p>
                     <p className="text-gray-400 mt-2">Prueba con otra búsqueda o categoría</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {filteredTemplates.map((template, idx) => (
+                    {sortedTemplates.map((template, idx) => (
                         <motion.div
                             key={template.id}
                             className="bg-white rounded-xl border-4 border-ink-black overflow-hidden shadow-[4px_4px_0px_rgba(45,49,66,0.2)] hover:shadow-[6px_6px_0px_rgba(45,49,66,0.3)] transition-shadow"

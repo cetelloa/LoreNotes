@@ -76,3 +76,62 @@ exports.getMe = async (req, res) => {
         res.status(401).json({ message: 'Token inválido' });
     }
 };
+
+// Get all sales (admin only)
+exports.getSales = async (req, res) => {
+    try {
+        const jwt = require('jsonwebtoken');
+        const User = require('../models/User');
+
+        // Verify admin
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ message: 'No autorizado' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_12345');
+        const admin = await User.findById(decoded.id);
+
+        if (!admin || admin.role !== 'admin') {
+            return res.status(403).json({ message: 'Acceso denegado' });
+        }
+
+        // Get all users with purchases
+        const users = await User.find({
+            'purchasedTemplates.0': { $exists: true }
+        }).select('username email purchasedTemplates');
+
+        // Flatten all purchases into a single array
+        const allSales = [];
+        for (const user of users) {
+            for (const purchase of user.purchasedTemplates) {
+                allSales.push({
+                    id: purchase._id,
+                    buyer: {
+                        username: user.username,
+                        email: user.email
+                    },
+                    templateId: purchase.templateId,
+                    title: purchase.title,
+                    price: purchase.price,
+                    purchaseDate: purchase.purchaseDate,
+                    paypalOrderId: purchase.paypalOrderId
+                });
+            }
+        }
+
+        // Sort by date (newest first)
+        allSales.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+
+        // Calculate totals
+        const totalRevenue = allSales.reduce((sum, sale) => sum + (sale.price || 0), 0);
+
+        res.json({
+            sales: allSales,
+            totalSales: allSales.length,
+            totalRevenue
+        });
+
+    } catch (error) {
+        console.error('Get sales error:', error);
+        res.status(500).json({ message: 'Error al obtener ventas' });
+    }
+};

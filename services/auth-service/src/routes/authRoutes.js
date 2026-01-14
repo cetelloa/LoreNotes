@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const adminController = require('../controllers/adminController');
+const couponController = require('../controllers/couponController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // ========== PUBLIC ROUTES ==========
@@ -36,7 +37,23 @@ router.post('/paypal/capture-order', authMiddleware, authController.capturePayPa
 router.put('/notifications', authMiddleware, authController.updateNotificationPreferences);
 router.get('/subscribed-users', authMiddleware, authController.getSubscribedUsers);
 
+// Favorites (Wishlist)
+router.get('/favorites', authMiddleware, authController.getFavorites);
+router.post('/favorites', authMiddleware, authController.addFavorite);
+router.delete('/favorites/:templateId', authMiddleware, authController.removeFavorite);
+
+// Coupons (user endpoints)
+router.post('/coupons/validate', authMiddleware, couponController.validateCoupon);
+router.post('/coupons/apply', authMiddleware, couponController.applyCoupon);
+
 // ========== ADMIN ROUTES ==========
 router.post('/make-admin', adminController.makeAdmin);
+router.get('/admin/sales', authMiddleware, adminController.getSales);
+
+// Admin coupon management
+router.get('/admin/coupons', authMiddleware, couponController.getCoupons);
+router.post('/admin/coupons', authMiddleware, couponController.createCoupon);
+router.delete('/admin/coupons/:id', authMiddleware, couponController.deleteCoupon);
+router.patch('/admin/coupons/:id/toggle', authMiddleware, couponController.toggleCoupon);
 
 module.exports = router;

@@ -407,6 +407,62 @@ exports.getPurchases = async (req, res) => {
     }
 };
 
+// ========== FAVORITES (WISHLIST) ==========
+
+// Get favorites
+exports.getFavorites = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        res.json({ favorites: user.favorites || [] });
+    } catch (error) {
+        console.error('Get favorites error:', error);
+        res.status(500).json({ message: 'Error al obtener favoritos' });
+    }
+};
+
+// Add to favorites
+exports.addFavorite = async (req, res) => {
+    try {
+        const { templateId, title } = req.body;
+        const user = await User.findById(req.user.id);
+
+        // Check if already in favorites
+        if (user.favorites.some(f => f.templateId === templateId)) {
+            return res.status(400).json({ message: 'Ya está en favoritos' });
+        }
+
+        user.favorites.push({ templateId, title });
+        await user.save();
+
+        res.json({
+            message: 'Agregado a favoritos',
+            favorites: user.favorites
+        });
+    } catch (error) {
+        console.error('Add favorite error:', error);
+        res.status(500).json({ message: 'Error al agregar a favoritos' });
+    }
+};
+
+// Remove from favorites
+exports.removeFavorite = async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        const user = await User.findById(req.user.id);
+
+        user.favorites = user.favorites.filter(f => f.templateId !== templateId);
+        await user.save();
+
+        res.json({
+            message: 'Eliminado de favoritos',
+            favorites: user.favorites
+        });
+    } catch (error) {
+        console.error('Remove favorite error:', error);
+        res.status(500).json({ message: 'Error al eliminar de favoritos' });
+    }
+};
+
 // ========== PAYPAL PAYMENTS ==========
 
 // Create PayPal order

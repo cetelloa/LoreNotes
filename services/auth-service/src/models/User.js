@@ -93,6 +93,12 @@ const userSchema = new mongoose.Schema({
     favoriteCategories: [{
         type: String
     }],
+    // Favorite templates (wishlist)
+    favorites: [{
+        templateId: { type: String, required: true },
+        title: String,
+        addedAt: { type: Date, default: Date.now }
+    }],
     createdAt: {
         type: Date,
         default: Date.now

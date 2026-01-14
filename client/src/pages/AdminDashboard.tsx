@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
-import { Upload, Image, FileText, DollarSign, Tag, Info, Trash2, Edit, BookOpen, Plus, Save } from 'lucide-react';
+import { Upload, Image, FileText, DollarSign, Tag, Info, Trash2, Edit, BookOpen, Plus, Save, BarChart3, Users, Calendar } from 'lucide-react';
 import { TEMPLATES_URL, AUTH_URL, BLOG_URL } from '../config';
 
 interface Template {
@@ -28,12 +28,22 @@ interface BlogPost {
     videoUrl?: string;
 }
 
+interface Sale {
+    id: string;
+    buyer: { username: string; email: string };
+    templateId: string;
+    title: string;
+    price: number;
+    purchaseDate: string;
+    paypalOrderId?: string;
+}
+
 export const AdminDashboard = () => {
     const { token, user } = useAuth();
     const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'templates' | 'blog'>('templates');
+    const [activeTab, setActiveTab] = useState<'templates' | 'blog' | 'sales'>('templates');
 
     // Templates state
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -46,6 +56,10 @@ export const AdminDashboard = () => {
     const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
     const [blogSuccess, setBlogSuccess] = useState('');
     const [blogError, setBlogError] = useState('');
+
+    // Sales state
+    const [sales, setSales] = useState<Sale[]>([]);
+    const [totalRevenue, setTotalRevenue] = useState(0);
 
     // Template Form state
     const [title, setTitle] = useState('');
@@ -62,6 +76,7 @@ export const AdminDashboard = () => {
         checkAdminStatus();
         fetchTemplates();
         fetchBlogPosts();
+        fetchSales();
     }, [token]);
 
     const checkAdminStatus = async () => {
@@ -95,6 +110,19 @@ export const AdminDashboard = () => {
                 setBlogPosts(data);
             }
         } catch (err) { console.error('Error fetching blog posts:', err); }
+    };
+
+    const fetchSales = async () => {
+        try {
+            const res = await fetch(`${AUTH_URL}/admin/sales`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSales(data.sales || []);
+                setTotalRevenue(data.totalRevenue || 0);
+            }
+        } catch (err) { console.error('Fetch sales error:', err); }
     };
 
     const resetTemplateForm = () => {
@@ -233,6 +261,13 @@ export const AdminDashboard = () => {
                         ${activeTab === 'blog' ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
                 >
                     <BookOpen size={16} /> Blog
+                </button>
+                <button
+                    onClick={() => setActiveTab('sales')}
+                    className={`px-5 py-2 rounded-full font-medium transition-all flex items-center gap-2
+                        ${activeTab === 'sales' ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
+                >
+                    <BarChart3 size={16} /> Ventas
                 </button>
             </div>
 
@@ -426,6 +461,89 @@ export const AdminDashboard = () => {
                         </div>
                     </motion.div>
                 </div>
+            )}
+
+            {/* Sales Tab */}
+            {activeTab === 'sales' && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                >
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white p-6 rounded-2xl shadow-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                                <DollarSign className="text-green-500" size={24} />
+                                <span className="text-elegant-gray">Ingresos Totales</span>
+                            </div>
+                            <p className="text-3xl font-bold text-elegant-black">${totalRevenue.toFixed(2)}</p>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                                <BarChart3 className="text-blue-500" size={24} />
+                                <span className="text-elegant-gray">Ventas Totales</span>
+                            </div>
+                            <p className="text-3xl font-bold text-elegant-black">{sales.length}</p>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Users className="text-purple-500" size={24} />
+                                <span className="text-elegant-gray">Ticket Promedio</span>
+                            </div>
+                            <p className="text-3xl font-bold text-elegant-black">
+                                ${sales.length > 0 ? (totalRevenue / sales.length).toFixed(2) : '0.00'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Sales Table */}
+                    <div className="bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 className="text-xl font-heading mb-4 flex items-center gap-2">
+                            <Calendar size={20} /> Historial de Ventas
+                        </h2>
+
+                        {sales.length === 0 ? (
+                            <p className="text-elegant-gray text-center py-8">No hay ventas registradas.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-cream">
+                                        <tr>
+                                            <th className="text-left p-3 font-medium">Fecha</th>
+                                            <th className="text-left p-3 font-medium">Comprador</th>
+                                            <th className="text-left p-3 font-medium">Plantilla</th>
+                                            <th className="text-right p-3 font-medium">Precio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sales.map((sale) => (
+                                            <tr key={sale.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                                <td className="p-3">
+                                                    {new Date(sale.purchaseDate).toLocaleDateString('es-ES', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div>
+                                                        <p className="font-medium">{sale.buyer.username}</p>
+                                                        <p className="text-xs text-gray-500">{sale.buyer.email}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="p-3">{sale.title}</td>
+                                                <td className="p-3 text-right font-medium text-green-600">
+                                                    ${sale.price?.toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
             )}
         </div>
     );
