@@ -39,13 +39,10 @@ async function createOrder(cart, userId, discountPercent = 0) {
     // Calcular subtotal
     const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
 
-    // Aplicar descuento
-    const discount = subtotal * (discountPercent / 100);
-    const total = subtotal - discount;
-
-    if (total <= 0) {
-        throw new Error('El total debe ser mayor a 0');
-    }
+    // Aplicar descuento (máximo 99% para evitar $0)
+    const effectiveDiscount = Math.min(discountPercent, 99);
+    const discount = subtotal * (effectiveDiscount / 100);
+    const total = Math.max(subtotal - discount, 0.01); // Mínimo $0.01
 
     // Construir items para PayPal
     const items = cart.map(item => ({
