@@ -397,6 +397,38 @@ exports.checkout = async (req, res) => {
     }
 };
 
+// Claim free template (price = 0)
+exports.claimFreeTemplate = async (req, res) => {
+    try {
+        const { templateId, title } = req.body;
+        const user = await User.findById(req.user.id);
+
+        // Check if already purchased
+        if (user.purchasedTemplates.some(p => p.templateId === templateId)) {
+            return res.status(400).json({ message: 'Ya tienes esta plantilla' });
+        }
+
+        // Add to purchased
+        user.purchasedTemplates.push({
+            templateId,
+            title,
+            price: 0,
+            purchaseDate: new Date()
+        });
+        await user.save();
+
+        res.json({
+            success: true,
+            message: '¡Plantilla obtenida gratis!',
+            purchasedCount: user.purchasedTemplates.length
+        });
+
+    } catch (error) {
+        console.error('Claim free template error:', error);
+        res.status(500).json({ message: 'Error al obtener plantilla' });
+    }
+};
+
 // Get purchases
 exports.getPurchases = async (req, res) => {
     try {

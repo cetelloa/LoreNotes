@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart } from 'lucide-react';
+import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart, Gift } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -111,6 +111,33 @@ export const TemplatesPage = () => {
             }
         } catch (error) {
             console.error('Error toggling favorite:', error);
+        }
+    };
+
+    const claimFreeTemplate = async (template: Template) => {
+        if (!isAuthenticated) {
+            alert('Inicia sesión para obtener esta plantilla');
+            return;
+        }
+        try {
+            const res = await fetch(`${AUTH_URL}/claim-free`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ templateId: template.id, title: template.title })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setPurchasedIds(prev => new Set([...prev, template.id]));
+                alert('¡Plantilla obtenida! Ya puedes descargarla.');
+            } else {
+                alert(data.message || 'Error al obtener plantilla');
+            }
+        } catch (error) {
+            console.error('Claim free error:', error);
+            alert('Error de conexión');
         }
     };
 
@@ -306,6 +333,18 @@ export const TemplatesPage = () => {
                                             >
                                                 <Download size={20} />
                                             </a>
+                                        ) : (template.price || 0) === 0 ? (
+                                            // Free template - show claim button
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    claimFreeTemplate(template);
+                                                }}
+                                                className="p-3 rounded-lg bg-green-500 text-white hover:bg-green-600 active:bg-green-700 transition-colors flex items-center gap-1"
+                                                title="Obtener gratis"
+                                            >
+                                                <Gift size={20} />
+                                            </button>
                                         ) : (
                                             // Not purchased - show cart button
                                             <button

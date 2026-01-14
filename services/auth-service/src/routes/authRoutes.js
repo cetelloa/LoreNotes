@@ -27,6 +27,7 @@ router.delete('/cart/:templateId', authMiddleware, authController.removeFromCart
 
 // Checkout & Purchases
 router.post('/checkout', authMiddleware, authController.checkout);
+router.post('/claim-free', authMiddleware, authController.claimFreeTemplate);
 router.get('/purchases', authMiddleware, authController.getPurchases);
 
 // PayPal Payments
