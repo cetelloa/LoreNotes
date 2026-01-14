@@ -28,15 +28,20 @@ function client() {
  * Crear orden de PayPal con los items del carrito
  * @param {Array} cart - Items del carrito [{templateId, title, price}]
  * @param {String} userId - ID del usuario
+ * @param {Number} discountPercent - Porcentaje de descuento (0-100)
  * @returns {Object} - Orden creada con ID
  */
-async function createOrder(cart, userId) {
+async function createOrder(cart, userId, discountPercent = 0) {
     if (!cart || cart.length === 0) {
         throw new Error('El carrito está vacío');
     }
 
-    // Calcular total
-    const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+    // Calcular subtotal
+    const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+
+    // Aplicar descuento
+    const discount = subtotal * (discountPercent / 100);
+    const total = subtotal - discount;
 
     if (total <= 0) {
         throw new Error('El total debe ser mayor a 0');

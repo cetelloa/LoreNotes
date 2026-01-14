@@ -68,7 +68,10 @@ export const CheckoutPage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                body: JSON.stringify({
+                    couponCode: couponDiscount > 0 ? couponCode : null
+                })
             });
 
             const data = await response.json();

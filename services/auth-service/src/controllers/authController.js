@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Coupon = require('../models/Coupon');
 const jwt = require('jsonwebtoken');
 const { sendVerificationEmail } = require('../services/emailService');
 const paypalService = require('../services/paypalService');
@@ -469,6 +470,7 @@ exports.removeFavorite = async (req, res) => {
 exports.createPayPalOrder = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
+        const { couponCode } = req.body;
 
         if (!user.cart || user.cart.length === 0) {
             return res.status(400).json({ message: 'El carrito está vacío' });
@@ -479,12 +481,29 @@ exports.createPayPalOrder = async (req, res) => {
             return res.status(500).json({ message: 'PayPal no está configurado' });
         }
 
-        const order = await paypalService.createOrder(user.cart, user._id.toString());
+        // Validate coupon if provided
+        let discountPercent = 0;
+        let validCoupon = null;
+        if (couponCode) {
+            validCoupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+            if (validCoupon && validCoupon.isValid()) {
+                discountPercent = validCoupon.discountPercent;
+            }
+        }
+
+        const order = await paypalService.createOrder(user.cart, user._id.toString(), discountPercent);
+
+        // If coupon was used, increment its usage
+        if (validCoupon && discountPercent > 0) {
+            validCoupon.currentUses += 1;
+            await validCoupon.save();
+        }
 
         res.json({
             orderId: order.id,
             status: order.status,
-            total: order.total
+            total: order.total,
+            discount: discountPercent
         });
 
     } catch (error) {
