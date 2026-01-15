@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Heart, FileText, Clock, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, FileText, Clock, BookOpen, Sparkles } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 
 interface Template {
