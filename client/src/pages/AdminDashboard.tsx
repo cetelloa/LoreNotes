@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CraftButton } from '../components/CraftButton';
 import { motion } from 'framer-motion';
-import { Upload, Image, FileText, DollarSign, Tag, Info, Trash2, Edit, BookOpen, Plus, Save, BarChart3, Users, Calendar, Ticket, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Upload, FileText, DollarSign, Tag, Info, Trash2, Edit, BookOpen, Plus, Save, BarChart3, Users, Calendar, Ticket, ToggleLeft, ToggleRight } from 'lucide-react';
 import { TEMPLATES_URL, AUTH_URL, BLOG_URL } from '../config';
 
 interface Template {
