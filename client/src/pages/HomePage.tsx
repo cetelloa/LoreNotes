@@ -194,7 +194,7 @@ export const HomePage = () => {
                 </div>
             </section>
 
-            {/* Donation Section */}
+            {/* Donation Section - HIDDEN TEMPORARILY
             <section className="py-16 px-6">
                 <motion.div
                     className="max-w-2xl mx-auto text-center"
@@ -228,6 +228,7 @@ export const HomePage = () => {
                     </div>
                 </motion.div>
             </section>
+            */}
 
             {/* CTA Section */}
             <section className="py-20 px-6 bg-lavender-soft/30">
