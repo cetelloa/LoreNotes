@@ -402,11 +402,11 @@ export const AdminDashboard = () => {
                         {uploadSuccess && <div className="bg-green-100 border-2 border-green-400 text-green-700 p-2 rounded-lg mb-3 text-sm">{uploadSuccess}</div>}
                         {uploadError && <div className="bg-red-100 border-2 border-red-400 text-red-700 p-2 rounded-lg mb-3 text-sm">{uploadError}</div>}
 
-                        <form onSubmit={handleSubmitTemplate} className="space-y-3">
+                        <form onSubmit={handleSubmitTemplate} className="space-y-4">
                             <div>
-                                <label className="flex items-center gap-1 font-heading mb-1 text-sm"><FileText size={14} /> Título</label>
+                                <label className="block text-elegant-gray text-sm mb-1">Título</label>
                                 <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" placeholder="Nombre" required />
+                                    className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all" placeholder="Nombre de la plantilla" required />
                             </div>
                             <div>
                                 <label className="flex items-center gap-1 font-heading mb-1 text-sm"><Info size={14} /> Descripción</label>
@@ -418,55 +418,61 @@ export const AdminDashboard = () => {
                                 <input type="text" value={purpose} onChange={(e) => setPurpose(e.target.value)}
                                     className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" placeholder="Ej: Invitaciones de boda" />
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="flex items-center gap-1 font-heading mb-1 text-xs"><DollarSign size={12} /> Precio</label>
+                                    <label className="block text-elegant-gray text-sm mb-1">Precio (USD)</label>
                                     <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)}
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" required />
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all" placeholder="0.00" required />
                                 </div>
                                 <div>
-                                    <label className="flex items-center gap-1 font-heading mb-1 text-xs"><Tag size={12} /> Categoría</label>
+                                    <label className="block text-elegant-gray text-sm mb-1">Categoría</label>
                                     <select value={category} onChange={(e) => { setCategory(e.target.value); if (e.target.value !== 'otros') setCustomCategory(''); }}
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm">
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all">
                                         <option value="">Seleccionar</option>
                                         {availableCategories.map(cat => (
                                             <option key={cat._id} value={cat.slug}>{cat.name}</option>
                                         ))}
-                                        <option value="otros">+ Otra categoría...</option>
+                                        <option value="otros">+ Nueva categoría...</option>
                                     </select>
                                     {category === 'otros' && (
                                         <input
                                             type="text"
                                             value={customCategory}
                                             onChange={(e) => setCustomCategory(e.target.value)}
-                                            placeholder="Escribe el nombre de la nueva categoría"
-                                            className="w-full p-2 mt-2 border-2 border-dashed border-green-500 rounded-lg text-sm"
+                                            placeholder="Nombre de la nueva categoría"
+                                            className="w-full p-3 mt-2 bg-green-50 rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-green-500/30 transition-all"
                                         />
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <label className="flex items-center gap-1 font-heading mb-1 text-sm">📹 Video Tutorial (opcional)</label>
+                                <label className="block text-elegant-gray text-sm mb-1">Video Tutorial (opcional)</label>
                                 <input type="url" value={tutorialVideoUrl} onChange={(e) => setTutorialVideoUrl(e.target.value)}
-                                    className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm"
+                                    className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
                                     placeholder="URL de TikTok o Instagram" />
                             </div>
-                            <div>
-                                <label className="flex items-center gap-1 font-heading mb-1 text-sm"><Image size={14} /> Imagen {editingTemplate && '(opcional)'}</label>
-                                <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                                    className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-elegant-gray text-sm mb-1">Imagen {editingTemplate && '(opcional)'}</label>
+                                    <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                                        className="w-full p-2 bg-cream rounded-xl text-sm file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-elegant-black file:text-white file:text-xs hover:file:bg-gray-800" />
+                                </div>
+                                <div>
+                                    <label className="block text-elegant-gray text-sm mb-1">Archivo {editingTemplate && '(opcional)'}</label>
+                                    <input type="file" accept=".pdf,.docx,.pptx,.xlsx" onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
+                                        className="w-full p-2 bg-cream rounded-xl text-sm file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-elegant-black file:text-white file:text-xs hover:file:bg-gray-800" />
+                                </div>
                             </div>
-                            <div>
-                                <label className="flex items-center gap-1 font-heading mb-1 text-sm"><FileText size={14} /> Archivo {editingTemplate && '(opcional)'}</label>
-                                <input type="file" accept=".pdf,.docx,.pptx,.xlsx" onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
-                                    className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
-                            </div>
-                            <div className="flex gap-2">
-                                <CraftButton variant="primary" className="flex-1 justify-center" disabled={uploading}>
-                                    {uploading ? 'Guardando...' : editingTemplate ? 'Actualizar' : 'Subir'}
-                                </CraftButton>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={uploading}
+                                    className="flex-1 bg-elegant-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {uploading ? 'Guardando...' : editingTemplate ? 'Actualizar' : 'Subir Plantilla'}
+                                </button>
                                 {editingTemplate && (
-                                    <button type="button" onClick={resetTemplateForm} className="px-4 py-2 bg-gray-200 rounded-lg">
+                                    <button type="button" onClick={resetTemplateForm} className="px-6 py-3 bg-cream text-elegant-gray rounded-full hover:bg-cream-dark transition-colors">
                                         Cancelar
                                     </button>
                                 )}
@@ -479,18 +485,18 @@ export const AdminDashboard = () => {
                         <h2 className="text-lg md:text-xl font-serif mb-4">Plantillas ({templates.length})</h2>
                         <div className="space-y-2 max-h-[500px] overflow-y-auto">
                             {templates.length === 0 ? (
-                                <p className="text-elegant-gray text-center py-8">No hay plantillas</p>
+                                <p className="text-elegant-gray text-center py-8">No hay plantillas aún</p>
                             ) : templates.map((t) => (
-                                <div key={t.id} className="flex items-center justify-between p-3 bg-cream rounded-xl">
+                                <div key={t.id} className="flex items-center justify-between p-4 bg-cream/50 rounded-xl hover:bg-cream transition-colors">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-heading font-bold text-sm truncate">{t.title}</h3>
-                                        <p className="text-xs text-gray-500">{t.category} • ${t.price?.toFixed(2)}</p>
+                                        <h3 className="font-medium text-elegant-black truncate">{t.title}</h3>
+                                        <p className="text-xs text-elegant-gray mt-0.5">{t.category} • ${t.price?.toFixed(2)}</p>
                                     </div>
-                                    <div className="flex gap-1 ml-2">
-                                        <button onClick={() => handleEditTemplate(t)} className="p-2 text-blue-500 hover:bg-blue-50 rounded">
+                                    <div className="flex gap-2 ml-3">
+                                        <button onClick={() => handleEditTemplate(t)} className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDeleteTemplate(t.id)} className="p-2 text-red-500 hover:bg-red-50 rounded">
+                                        <button onClick={() => handleDeleteTemplate(t.id)} className="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-full transition-colors">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
