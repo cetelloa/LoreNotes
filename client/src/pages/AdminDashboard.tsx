@@ -249,7 +249,6 @@ export const AdminDashboard = () => {
                 if (catRes.ok) {
                     const catData = await catRes.json();
                     finalCategory = catData.category.slug;
-                    fetchCategories(); // Refresh categories list
                 }
             } catch (err) {
                 console.error('Error creating category:', err);
@@ -277,6 +276,8 @@ export const AdminDashboard = () => {
                 setUploadSuccess(isEditing ? '¡Plantilla actualizada!' : '¡Plantilla subida!');
                 resetTemplateForm();
                 fetchTemplates();
+                // Refresh categories to show any newly created ones
+                await fetchCategories();
             } else {
                 const data = await res.json();
                 setUploadError(data.error || 'Error al procesar plantilla');
