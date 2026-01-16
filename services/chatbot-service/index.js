@@ -17,8 +17,15 @@ app.use(cors({
 app.use(express.json());
 
 // Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+let model;
+try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    console.log('✅ Gemini AI initialized successfully');
+} catch (error) {
+    console.error('❌ Failed to initialize Gemini AI:', error.message);
+    model = null;
+}
 
 // In-memory conversation history (per session, simplified)
 const conversationHistory = new Map();
@@ -83,6 +90,12 @@ const formatHistory = (history) => {
 
 // Generate response with Gemini AI and conversation context
 const generateAIResponse = async (userMessage, templates, history) => {
+    // If model failed to initialize, return fallback
+    if (!model) {
+        console.log('⚠️ Gemini model not available, using fallback');
+        return getFallbackResponse(userMessage, templates);
+    }
+
     const templateContext = formatTemplatesForAI(templates);
     const historyContext = formatHistory(history);
 
@@ -111,16 +124,33 @@ INSTRUCCIONES:
 
 
     try {
+        console.log('🤖 Sending request to Gemini...');
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        return response.text();
+        const text = response.text();
+        console.log('✅ Gemini response received:', text.substring(0, 100) + '...');
+        return text;
     } catch (error) {
-        console.error('Gemini API error:', error);
-        if (templates.length > 0) {
-            return `¡Tengo ${templates.length} opción${templates.length > 1 ? 'es' : ''} para ti! 🎨 "${templates[0].title}" por $${templates[0].price?.toFixed(2) || '0.00'} podría interesarte.`;
-        }
-        return "¡Ups! Tuve un pequeño problema. ¿Puedes reformular tu pregunta? 😊";
+        console.error('❌ Gemini API error:', error.message);
+        console.error('Full error:', error);
+        return getFallbackResponse(userMessage, templates);
     }
+};
+
+// Fallback response when AI fails
+const getFallbackResponse = (userMessage, templates) => {
+    const greetings = ['hola', 'hi', 'hey', 'buenos', 'buenas', 'saludos'];
+    const isGreeting = greetings.some(g => userMessage.toLowerCase().includes(g));
+
+    if (isGreeting) {
+        return "¡Hola! 👋 Soy LoreBot, tu asistente de diseño. ¿Buscas plantillas para algún proyecto especial? 🎨";
+    }
+
+    if (templates.length > 0) {
+        return `¡Encontré ${templates.length} plantilla${templates.length > 1 ? 's' : ''} que podrían interesarte! 🎨 "${templates[0].title}" por $${templates[0].price?.toFixed(2) || '0.00'} es una excelente opción.`;
+    }
+
+    return "¡Estoy aquí para ayudarte! 😊 Cuéntame qué tipo de plantilla necesitas: ¿para un proyecto escolar, trabajo, o algo especial?";
 };
 
 // Chat Endpoint with conversation history
