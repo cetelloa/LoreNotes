@@ -67,6 +67,7 @@ public class TemplateController {
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
+                    .header("Cache-Control", "public, max-age=3600") // Cache for 1 hour
                     .body(imageData);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

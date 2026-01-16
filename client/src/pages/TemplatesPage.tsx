@@ -1,9 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart, Gift } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { SkeletonGrid, LazyImage } from '../components/SkeletonLoader';
+
+// Cache configuration
+const CACHE_KEY = 'lorenotes_templates_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+interface CachedData {
+    templates: Template[];
+    timestamp: number;
+}
 
 interface Template {
     id: string;
@@ -35,69 +45,93 @@ export const TemplatesPage = () => {
     const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
     const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
+    // Load cached templates immediately for faster initial render
     useEffect(() => {
-        fetchTemplates();
-        fetchDynamicCategories();
-        if (isAuthenticated) {
-            fetchPurchases();
-            fetchFavorites();
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            try {
+                const { templates: cachedTemplates, timestamp }: CachedData = JSON.parse(cached);
+                if (Date.now() - timestamp < CACHE_DURATION) {
+                    setTemplates(cachedTemplates);
+                    setLoading(false);
+                }
+            } catch (e) {
+                localStorage.removeItem(CACHE_KEY);
+            }
         }
-    }, [isAuthenticated]);
+        // Always fetch fresh data in background
+        loadAllData();
+    }, []);
 
-    const fetchDynamicCategories = async () => {
+    // Re-fetch user-specific data when auth changes
+    useEffect(() => {
+        if (isAuthenticated && token) {
+            loadUserData();
+        }
+    }, [isAuthenticated, token]);
+
+    // Parallel loading of all public data
+    const loadAllData = useCallback(async () => {
         try {
-            const res = await fetch(`${AUTH_URL}/categories`);
-            if (res.ok) {
-                const data = await res.json();
-                // Get unique slugs that are not in default categories
-                const customCats = data
+            const [templatesRes, categoriesRes] = await Promise.all([
+                fetch(TEMPLATES_URL),
+                fetch(`${AUTH_URL}/categories`)
+            ]);
+
+            // Process templates
+            if (templatesRes.ok) {
+                const templatesData = await templatesRes.json();
+                setTemplates(templatesData);
+                // Cache the templates
+                const cacheData: CachedData = {
+                    templates: templatesData,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            }
+
+            // Process categories
+            if (categoriesRes.ok) {
+                const categoriesData = await categoriesRes.json();
+                const customCats = categoriesData
                     .filter((c: { slug: string; isDefault: boolean }) => !c.isDefault)
                     .map((c: { slug: string }) => c.slug);
                 setDynamicCategories(customCats);
             }
-        } catch (err) { console.error('Error fetching categories:', err); }
-    };
-
-    const fetchTemplates = async () => {
-        try {
-            const res = await fetch(TEMPLATES_URL);
-            const data = await res.json();
-            setTemplates(data);
         } catch (error) {
-            console.error('Error fetching templates:', error);
+            console.error('Error loading data:', error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    };
+    }, []);
 
-    const fetchPurchases = async () => {
+    // Parallel loading of user-specific data
+    const loadUserData = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await fetch(`${AUTH_URL}/purchases`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
+            const [purchasesRes, favoritesRes] = await Promise.all([
+                fetch(`${AUTH_URL}/purchases`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`${AUTH_URL}/favorites`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+
+            if (purchasesRes.ok) {
+                const data = await purchasesRes.json();
                 const ids = new Set<string>(data.purchases?.map((p: { templateId: string }) => p.templateId) || []);
                 setPurchasedIds(ids);
             }
-        } catch (error) {
-            console.error('Error fetching purchases:', error);
-        }
-    };
 
-    const fetchFavorites = async () => {
-        try {
-            const res = await fetch(`${AUTH_URL}/favorites`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
+            if (favoritesRes.ok) {
+                const data = await favoritesRes.json();
                 setFavoriteIds(new Set(data.favorites.map((f: { templateId: string }) => f.templateId)));
             }
         } catch (error) {
-            console.error('Error fetching favorites:', error);
+            console.error('Error loading user data:', error);
         }
-    };
+    }, [token]);
 
     const toggleFavorite = async (template: Template) => {
         if (!isAuthenticated) return;
@@ -281,10 +315,7 @@ export const TemplatesPage = () => {
 
             {/* Templates Grid */}
             {loading ? (
-                <div className="text-center py-12">
-                    <div className="animate-spin w-12 h-12 border-4 border-primary-craft border-t-transparent rounded-full mx-auto"></div>
-                    <p className="mt-4 text-gray-500">Cargando plantillas...</p>
-                </div>
+                <SkeletonGrid count={6} />
             ) : sortedTemplates.length === 0 ? (
                 <div className="text-center py-12 bg-white/90 rounded-xl border-4 border-ink-black">
                     <p className="text-xl text-gray-500">No se encontraron plantillas 😢</p>
@@ -303,13 +334,11 @@ export const TemplatesPage = () => {
                         >
                             {/* Image */}
                             <div className="relative h-40 md:h-48 overflow-hidden bg-gray-100">
-                                <img
+                                <LazyImage
                                     src={getImageUrl(template)}
                                     alt={template.title}
                                     className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop';
-                                    }}
+                                    fallbackSrc="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop"
                                 />
                                 <div className="absolute top-2 right-2 bg-accent-craft text-ink-black text-xs font-bold px-2 py-1 rounded-full border-2 border-ink-black">
                                     {getCategoryLabel(template.category)}
