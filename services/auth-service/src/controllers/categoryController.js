@@ -21,7 +21,7 @@ exports.createCategory = async (req, res) => {
             return res.status(400).json({ message: 'Nombre de categoría requerido' });
         }
 
-        // Check if already exists
+        // Generate slug
         const slug = name
             .toLowerCase()
             .normalize('NFD')
@@ -31,31 +31,32 @@ exports.createCategory = async (req, res) => {
 
         console.log('Generated slug:', slug);
 
-        const existing = await Category.findOne({ slug });
-        if (existing) {
-            console.log('Category already exists:', existing);
-            return res.json({ category: existing, message: 'Categoría ya existe' });
-        }
+        // Use findOneAndUpdate with upsert - atomic operation, no race conditions
+        const category = await Category.findOneAndUpdate(
+            { slug: slug },
+            {
+                $setOnInsert: {
+                    name: name.trim(),
+                    slug: slug,
+                    isDefault: false,
+                    createdAt: new Date()
+                }
+            },
+            {
+                upsert: true,
+                new: true,
+                runValidators: true
+            }
+        );
 
-        const category = new Category({ name: name.trim(), slug });
-        await category.save();
-        console.log('Category created:', category);
-
+        console.log('Category result:', category);
         res.status(201).json({ category, message: 'Categoría creada' });
     } catch (error) {
         console.error('Create category error:', error.message, error.stack);
-        // Handle duplicate key error
-        if (error.code === 11000) {
-            const existing = await Category.findOne({
-                $or: [{ name: req.body.name }, { slug: req.body.name.toLowerCase().replace(/\s+/g, '_') }]
-            });
-            if (existing) {
-                return res.json({ category: existing, message: 'Categoría ya existe' });
-            }
-        }
         res.status(500).json({ message: 'Error al crear categoría', error: error.message });
     }
 };
+
 
 
 // Delete category (admin only)
