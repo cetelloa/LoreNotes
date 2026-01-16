@@ -15,6 +15,7 @@ exports.getCategories = async (req, res) => {
 exports.createCategory = async (req, res) => {
     try {
         const { name } = req.body;
+        console.log('Creating category:', name);
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: 'Nombre de categoría requerido' });
@@ -28,20 +29,34 @@ exports.createCategory = async (req, res) => {
             .replace(/\s+/g, '_')
             .replace(/[^a-z0-9_]/g, '');
 
+        console.log('Generated slug:', slug);
+
         const existing = await Category.findOne({ slug });
         if (existing) {
+            console.log('Category already exists:', existing);
             return res.json({ category: existing, message: 'Categoría ya existe' });
         }
 
         const category = new Category({ name: name.trim(), slug });
         await category.save();
+        console.log('Category created:', category);
 
         res.status(201).json({ category, message: 'Categoría creada' });
     } catch (error) {
-        console.error('Create category error:', error);
-        res.status(500).json({ message: 'Error al crear categoría' });
+        console.error('Create category error:', error.message, error.stack);
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            const existing = await Category.findOne({
+                $or: [{ name: req.body.name }, { slug: req.body.name.toLowerCase().replace(/\s+/g, '_') }]
+            });
+            if (existing) {
+                return res.json({ category: existing, message: 'Categoría ya existe' });
+            }
+        }
+        res.status(500).json({ message: 'Error al crear categoría', error: error.message });
     }
 };
+
 
 // Delete category (admin only)
 exports.deleteCategory = async (req, res) => {
