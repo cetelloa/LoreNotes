@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, RotateCcw } from 'lucide-react';
+import { MessageCircle, X, Send, RotateCcw, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { CHATBOT_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
 
@@ -150,9 +151,15 @@ export const ChatWidget = () => {
                             {templates.length > 0 && messages.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {templates.slice(0, 3).map((t, idx) => (
-                                        <div key={idx} className="bg-accent-craft/30 text-xs px-2 py-1 rounded-full border border-accent-craft">
+                                        <Link
+                                            key={idx}
+                                            to={`/templates#${t.id}`}
+                                            onClick={() => setIsOpen(false)}
+                                            className="bg-accent-craft/30 text-xs px-3 py-1.5 rounded-full border border-accent-craft hover:bg-accent-craft/50 transition-colors cursor-pointer flex items-center gap-1"
+                                        >
                                             {t.title} - ${t.price?.toFixed(2)}
-                                        </div>
+                                            <ExternalLink size={12} />
+                                        </Link>
                                     ))}
                                 </div>
                             )}
