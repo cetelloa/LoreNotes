@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart, Gift } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
@@ -29,6 +30,7 @@ interface Template {
 }
 
 export const TemplatesPage = () => {
+    const location = useLocation();
     const [templates, setTemplates] = useState<Template[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +46,19 @@ export const TemplatesPage = () => {
 
     const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
     const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+
+    // Handle deep linking - open preview modal for template in URL hash
+    useEffect(() => {
+        const hash = location.hash.replace('#', '');
+        if (hash && templates.length > 0 && !loading) {
+            const template = templates.find(t => t.id === hash);
+            if (template) {
+                setPreviewModal({ isOpen: true, template });
+                // Clear the hash from URL after opening
+                window.history.replaceState(null, '', location.pathname);
+            }
+        }
+    }, [location.hash, templates, loading]);
 
     // Load cached templates immediately for faster initial render
     useEffect(() => {
