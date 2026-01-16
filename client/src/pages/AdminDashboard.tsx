@@ -238,6 +238,7 @@ export const AdminDashboard = () => {
         let finalCategory = category;
         if (category === 'otros' && customCategory.trim()) {
             try {
+                console.log('Creating new category:', customCategory.trim());
                 const catRes = await fetch(`${AUTH_URL}/categories`, {
                     method: 'POST',
                     headers: {
@@ -246,13 +247,31 @@ export const AdminDashboard = () => {
                     },
                     body: JSON.stringify({ name: customCategory.trim() })
                 });
-                if (catRes.ok) {
-                    const catData = await catRes.json();
+                const catData = await catRes.json();
+                console.log('Category response:', catData);
+                // Handle both success and "already exists" responses
+                if (catData.category && catData.category.slug) {
                     finalCategory = catData.category.slug;
+                } else {
+                    // Generate slug manually as fallback
+                    finalCategory = customCategory.trim()
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/\s+/g, '_')
+                        .replace(/[^a-z0-9_]/g, '');
                 }
             } catch (err) {
                 console.error('Error creating category:', err);
+                // Generate slug manually as fallback
+                finalCategory = customCategory.trim()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, '_')
+                    .replace(/[^a-z0-9_]/g, '');
             }
+
         }
 
         const formData = new FormData();
