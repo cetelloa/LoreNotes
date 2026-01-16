@@ -7,6 +7,7 @@ dotenv.config();
 
 const authRoutes = require('./src/routes/authRoutes');
 const blogRoutes = require('./src/routes/blogRoutes');
+const { initDefaultCategories } = require('./src/controllers/categoryController');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -29,7 +30,11 @@ app.get('/health', (req, res) => {
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/lorenotes-auth')
-    .then(() => console.log('✅ MongoDB Connected (Auth Service)'))
+    .then(async () => {
+        console.log('✅ MongoDB Connected (Auth Service)');
+        // Initialize default categories
+        await initDefaultCategories();
+    })
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 app.listen(PORT, () => {
