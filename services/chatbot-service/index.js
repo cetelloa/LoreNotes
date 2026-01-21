@@ -30,7 +30,14 @@ try {
 // In-memory conversation history (per session, simplified)
 const conversationHistory = new Map();
 
-// Template Schema
+// ===== TEMPLATE CACHE FOR PERFORMANCE =====
+let templateCache = {
+    data: null,
+    timestamp: 0,
+    TTL: 5 * 60 * 1000 // 5 minutes cache
+};
+
+// Template Schema with INDEXES
 const templateSchema = new mongoose.Schema({
     title: String,
     description: String,
@@ -46,28 +53,75 @@ const templateSchema = new mongoose.Schema({
     isActive: Boolean
 }, { collection: 'templates' });
 
+// ===== INDEXES FOR FAST QUERIES =====
+templateSchema.index({ isActive: 1 });
+templateSchema.index({ category: 1 });
+templateSchema.index({ price: 1 });
+// Text index for fast full-text search (replaces slow $regex)
+templateSchema.index({ title: 'text', description: 'text', purpose: 'text', tags: 'text' });
+
 const Template = mongoose.model('Template', templateSchema);
 
-// Intelligent Search Function
+// Get cached templates or fetch fresh
+const getCachedTemplates = async () => {
+    const now = Date.now();
+    if (templateCache.data && (now - templateCache.timestamp) < templateCache.TTL) {
+        return templateCache.data;
+    }
+    // Fetch fresh data with .lean() for faster query
+    const templates = await Template.find({ isActive: true }).lean();
+    templateCache.data = templates;
+    templateCache.timestamp = now;
+    return templates;
+};
+
+// Optimized Search Function with Text Search
 const searchTemplates = async (query) => {
     const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
 
     if (words.length === 0) {
-        return await Template.find({ isActive: true }).limit(5);
+        // Use cache for empty queries
+        const cached = await getCachedTemplates();
+        return cached.slice(0, 5);
     }
 
-    const results = await Template.find({
-        isActive: true,
-        $or: words.flatMap(word => [
-            { title: { $regex: word, $options: 'i' } },
-            { description: { $regex: word, $options: 'i' } },
-            { purpose: { $regex: word, $options: 'i' } },
-            { category: { $regex: word, $options: 'i' } },
-            { tags: { $regex: word, $options: 'i' } }
-        ])
-    }).limit(10);
+    try {
+        // Try text search first (fastest, uses index)
+        const textResults = await Template.find({
+            isActive: true,
+            $text: { $search: query }
+        }, {
+            score: { $meta: 'textScore' }
+        })
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(10)
+            .lean();
 
-    return results;
+        if (textResults.length > 0) {
+            return textResults;
+        }
+
+        // Fallback: filter from cache if no text results
+        const cached = await getCachedTemplates();
+        return cached.filter(t =>
+            words.some(word =>
+                t.title?.toLowerCase().includes(word) ||
+                t.description?.toLowerCase().includes(word) ||
+                t.category?.toLowerCase().includes(word)
+            )
+        ).slice(0, 10);
+
+    } catch (error) {
+        console.log('⚠️ Text search failed, using fallback:', error.message);
+        // Fallback to cache filter
+        const cached = await getCachedTemplates();
+        return cached.filter(t =>
+            words.some(word =>
+                t.title?.toLowerCase().includes(word) ||
+                t.description?.toLowerCase().includes(word)
+            )
+        ).slice(0, 10);
+    }
 };
 
 // Format templates for AI context

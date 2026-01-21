@@ -134,4 +134,12 @@ userSchema.methods.generateResetCode = function () {
     return code;
 };
 
+// ===== INDEXES FOR PERFORMANCE =====
+// Compound index for notification queries
+userSchema.index({ isVerified: 1, emailNotifications: 1 });
+// Index for email lookups (already unique, but explicit for clarity)
+userSchema.index({ email: 1 });
+// Index for role-based queries (admin dashboard)
+userSchema.index({ role: 1 });
+
 module.exports = mongoose.model('User', userSchema);

@@ -675,10 +675,11 @@ exports.updateNotificationPreferences = async (req, res) => {
 // Get subscribed users for blog notifications (admin only)
 exports.getSubscribedUsers = async (req, res) => {
     try {
+        // Optimized: .lean() for faster query, select only needed fields
         const users = await User.find({
             isVerified: true,
             emailNotifications: true
-        }).select('email username');
+        }).select('email username').lean();
 
         res.json({ users });
     } catch (error) {
