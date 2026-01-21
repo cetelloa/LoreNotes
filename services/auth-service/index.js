@@ -39,4 +39,31 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/lorenotes-a
 
 app.listen(PORT, () => {
     console.log(`🚀 Auth Service running on port ${PORT}`);
+    
+    // ===== KEEP-ALIVE SYSTEM =====
+    // Ping all services every 10 minutes to prevent Render free tier from sleeping
+    const SERVICES = [
+        { name: 'Auth', url: 'https://lorenotes-auth.onrender.com/health' },
+        { name: 'Templates', url: 'https://lorenotes-templates.onrender.com/api/templates' },
+        { name: 'Chatbot', url: 'https://lorenotes-chatbot.onrender.com/health' }
+    ];
+    
+    const pingServices = async () => {
+        console.log('🔄 Keep-alive ping starting...');
+        for (const service of SERVICES) {
+            try {
+                const response = await fetch(service.url);
+                console.log(`✅ ${service.name}: ${response.status}`);
+            } catch (error) {
+                console.log(`⚠️ ${service.name}: Failed to ping`);
+            }
+        }
+    };
+    
+    // Ping every 10 minutes (600000 ms)
+    setInterval(pingServices, 10 * 60 * 1000);
+    
+    // Initial ping after 30 seconds
+    setTimeout(pingServices, 30000);
+    console.log('🏓 Keep-alive system activated (pings every 10 min)');
 });

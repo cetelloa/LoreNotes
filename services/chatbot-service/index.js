@@ -236,6 +236,33 @@ mongoose.connect(MONGO_URI)
         app.listen(PORT, () => {
             console.log(`🤖 AI Chatbot Service running on port ${PORT}`);
             console.log(`🧠 Powered by Google Gemini AI with conversation memory`);
+
+            // ===== KEEP-ALIVE SYSTEM (Backup) =====
+            // Ping all services every 10 minutes to prevent Render free tier from sleeping
+            const SERVICES = [
+                { name: 'Auth', url: 'https://lorenotes-auth.onrender.com/health' },
+                { name: 'Templates', url: 'https://lorenotes-templates.onrender.com/api/templates' },
+                { name: 'Chatbot', url: 'https://lorenotes-chatbot.onrender.com/health' }
+            ];
+
+            const pingServices = async () => {
+                console.log('🔄 Keep-alive ping (backup)...');
+                for (const service of SERVICES) {
+                    try {
+                        const response = await fetch(service.url);
+                        console.log(`✅ ${service.name}: ${response.status}`);
+                    } catch (error) {
+                        console.log(`⚠️ ${service.name}: Failed`);
+                    }
+                }
+            };
+
+            // Ping every 10 minutes, offset by 5 minutes from auth-service
+            setTimeout(() => {
+                setInterval(pingServices, 10 * 60 * 1000);
+                pingServices();
+            }, 5 * 60 * 1000);
+            console.log('🏓 Keep-alive backup activated');
         });
     })
     .catch(err => {
@@ -244,3 +271,4 @@ mongoose.connect(MONGO_URI)
             console.log(`🤖 AI Chatbot Service running on port ${PORT} (No DB)`);
         });
     });
+
