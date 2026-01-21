@@ -29,12 +29,6 @@ interface Template {
 
 export const ChatWidget = () => {
     const { isAuthenticated } = useAuth();
-
-    // Only show chat widget when user is logged in
-    if (!isAuthenticated) {
-        return null;
-    }
-
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
@@ -46,6 +40,11 @@ export const ChatWidget = () => {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Only show chat widget when user is logged in
+    if (!isAuthenticated) {
+        return null;
+    }
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
