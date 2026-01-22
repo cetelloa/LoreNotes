@@ -6,6 +6,7 @@ import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonGrid, LazyImage } from '../components/SkeletonLoader';
+import { ReviewSection } from '../components/ReviewSection';
 
 const CACHE_KEY = 'lorenotes_templates_cache';
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -42,6 +43,7 @@ export const TemplatesPage = () => {
 
     const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
     const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+    const [reviewStats, setReviewStats] = useState<Record<string, { averageRating: number; totalReviews: number }>>({});
 
     useEffect(() => {
         const hash = location.hash.replace('#', '');
@@ -82,6 +84,22 @@ export const TemplatesPage = () => {
                 const templatesData = await templatesRes.json();
                 setTemplates(templatesData);
                 localStorage.setItem(CACHE_KEY, JSON.stringify({ templates: templatesData, timestamp: Date.now() }));
+
+                // Load review stats for all templates
+                const templateIds = templatesData.map((t: Template) => t.id);
+                if (templateIds.length > 0) {
+                    try {
+                        const statsRes = await fetch(`${AUTH_URL}/reviews/bulk-stats`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ templateIds })
+                        });
+                        if (statsRes.ok) {
+                            const statsData = await statsRes.json();
+                            setReviewStats(statsData.stats);
+                        }
+                    } catch (e) { console.error('Error loading review stats:', e); }
+                }
             }
             if (categoriesRes.ok) {
                 const categoriesData = await categoriesRes.json();
@@ -272,9 +290,13 @@ export const TemplatesPage = () => {
                                                 {(template.author || 'A').charAt(0).toUpperCase()}
                                             </div>
                                             <div className="flex items-center gap-0.5">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <Star key={star} size={14} className={star <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />
-                                                ))}
+                                                {[1, 2, 3, 4, 5].map((star) => {
+                                                    const avgRating = reviewStats[template.id]?.averageRating || 0;
+                                                    return <Star key={star} size={14} className={star <= Math.round(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />;
+                                                })}
+                                                {reviewStats[template.id]?.totalReviews ? (
+                                                    <span className="text-xs text-elegant-light ml-1">({reviewStats[template.id].totalReviews})</span>
+                                                ) : null}
                                             </div>
                                         </div>
                                     </div>
@@ -316,6 +338,12 @@ export const TemplatesPage = () => {
                                         </button>
                                     )}
                                 </div>
+
+                                {/* Reviews Section */}
+                                <ReviewSection
+                                    templateId={previewModal.template.id}
+                                    hasPurchased={purchasedIds.has(previewModal.template.id)}
+                                />
                             </div>
                         </motion.div>
                     </motion.div>

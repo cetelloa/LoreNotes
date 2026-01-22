@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Coupon = require('../models/Coupon');
+const Review = require('../models/Review');
 const jwt = require('jsonwebtoken');
 const { sendVerificationEmail } = require('../services/emailService');
 const paypalService = require('../services/paypalService');
@@ -685,5 +686,194 @@ exports.getSubscribedUsers = async (req, res) => {
     } catch (error) {
         console.error('Get subscribed users error:', error);
         res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+};
+
+// ==================== REVIEWS SYSTEM ====================
+
+// Create or update a review
+exports.createOrUpdateReview = async (req, res) => {
+    try {
+        const { templateId, rating, comment } = req.body;
+        const userId = req.user.id;
+
+        if (!templateId || !rating) {
+            return res.status(400).json({ message: 'templateId y rating son requeridos' });
+        }
+
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Rating debe estar entre 1 y 5' });
+        }
+
+        // Check if user has purchased this template
+        const user = await User.findById(userId);
+        const hasPurchased = user.purchasedTemplates?.some(p => p.templateId === templateId);
+
+        if (!hasPurchased) {
+            return res.status(403).json({ message: 'Debes comprar esta plantilla para dejar un review' });
+        }
+
+        // Create or update review
+        const review = await Review.findOneAndUpdate(
+            { templateId, userId },
+            {
+                templateId,
+                userId,
+                username: user.username,
+                rating,
+                comment: comment || '',
+                updatedAt: new Date()
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        res.json({ message: 'Review guardado', review });
+    } catch (error) {
+        console.error('Create review error:', error);
+        res.status(500).json({ message: 'Error al guardar review' });
+    }
+};
+
+// Get reviews for a template
+exports.getTemplateReviews = async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const reviews = await Review.find({ templateId })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean();
+
+        const total = await Review.countDocuments({ templateId });
+
+        res.json({
+            reviews,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Get reviews error:', error);
+        res.status(500).json({ message: 'Error al obtener reviews' });
+    }
+};
+
+// Get review stats for a template (average rating, count)
+exports.getReviewStats = async (req, res) => {
+    try {
+        const { templateId } = req.params;
+
+        const stats = await Review.aggregate([
+            { $match: { templateId } },
+            {
+                $group: {
+                    _id: '$templateId',
+                    averageRating: { $avg: '$rating' },
+                    totalReviews: { $sum: 1 },
+                    ratingDistribution: {
+                        $push: '$rating'
+                    }
+                }
+            }
+        ]);
+
+        if (stats.length === 0) {
+            return res.json({
+                averageRating: 0,
+                totalReviews: 0,
+                distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            });
+        }
+
+        // Calculate distribution
+        const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        stats[0].ratingDistribution.forEach(r => {
+            distribution[r]++;
+        });
+
+        res.json({
+            averageRating: Math.round(stats[0].averageRating * 10) / 10,
+            totalReviews: stats[0].totalReviews,
+            distribution
+        });
+    } catch (error) {
+        console.error('Get review stats error:', error);
+        res.status(500).json({ message: 'Error al obtener estadísticas' });
+    }
+};
+
+// Get bulk stats for multiple templates (for template listing)
+exports.getBulkReviewStats = async (req, res) => {
+    try {
+        const { templateIds } = req.body;
+
+        if (!templateIds || !Array.isArray(templateIds)) {
+            return res.status(400).json({ message: 'templateIds array requerido' });
+        }
+
+        const stats = await Review.aggregate([
+            { $match: { templateId: { $in: templateIds } } },
+            {
+                $group: {
+                    _id: '$templateId',
+                    averageRating: { $avg: '$rating' },
+                    totalReviews: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Convert to object for easy lookup
+        const statsMap = {};
+        stats.forEach(s => {
+            statsMap[s._id] = {
+                averageRating: Math.round(s.averageRating * 10) / 10,
+                totalReviews: s.totalReviews
+            };
+        });
+
+        res.json({ stats: statsMap });
+    } catch (error) {
+        console.error('Get bulk stats error:', error);
+        res.status(500).json({ message: 'Error al obtener estadísticas' });
+    }
+};
+
+// Delete my review
+exports.deleteReview = async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        const userId = req.user.id;
+
+        const result = await Review.findOneAndDelete({ templateId, userId });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Review no encontrado' });
+        }
+
+        res.json({ message: 'Review eliminado' });
+    } catch (error) {
+        console.error('Delete review error:', error);
+        res.status(500).json({ message: 'Error al eliminar review' });
+    }
+};
+
+// Get my review for a template
+exports.getMyReview = async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        const userId = req.user.id;
+
+        const review = await Review.findOne({ templateId, userId }).lean();
+
+        res.json({ review: review || null });
+    } catch (error) {
+        console.error('Get my review error:', error);
+        res.status(500).json({ message: 'Error al obtener review' });
     }
 };

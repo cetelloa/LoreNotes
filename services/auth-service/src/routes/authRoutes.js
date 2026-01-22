@@ -63,4 +63,15 @@ router.get('/categories', categoryController.getCategories);
 router.post('/categories', authMiddleware, categoryController.createCategory);
 router.delete('/categories/:id', authMiddleware, categoryController.deleteCategory);
 
+// ========== REVIEWS SYSTEM ==========
+// Public: get reviews and stats
+router.get('/reviews/:templateId', authController.getTemplateReviews);
+router.get('/reviews/stats/:templateId', authController.getReviewStats);
+router.post('/reviews/bulk-stats', authController.getBulkReviewStats);
+
+// Protected: create, update, delete reviews
+router.post('/reviews', authMiddleware, authController.createOrUpdateReview);
+router.get('/reviews/mine/:templateId', authMiddleware, authController.getMyReview);
+router.delete('/reviews/:templateId', authMiddleware, authController.deleteReview);
+
 module.exports = router;
