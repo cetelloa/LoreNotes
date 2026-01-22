@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, DollarSign, ShoppingCart, Eye, Check, X, Download, Play, ArrowUpDown, Heart, Gift } from 'lucide-react';
+import { Search, ShoppingCart, Eye, Check, X, Download, Play, Heart, Gift, Star, DollarSign } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -39,7 +39,7 @@ export const TemplatesPage = () => {
     const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; template: Template | null }>({ isOpen: false, template: null });
-    const [sortBy, setSortBy] = useState<'recent' | 'price-low' | 'price-high'>('recent');
+    const [sortBy] = useState<'recent' | 'price-low' | 'price-high'>('recent');
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
@@ -47,20 +47,17 @@ export const TemplatesPage = () => {
     const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
     const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
-    // Handle deep linking - open preview modal for template in URL hash
     useEffect(() => {
         const hash = location.hash.replace('#', '');
         if (hash && templates.length > 0 && !loading) {
             const template = templates.find(t => t.id === hash);
             if (template) {
                 setPreviewModal({ isOpen: true, template });
-                // Clear the hash from URL after opening
                 window.history.replaceState(null, '', location.pathname);
             }
         }
     }, [location.hash, templates, loading]);
 
-    // Load cached templates immediately for faster initial render
     useEffect(() => {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -74,18 +71,15 @@ export const TemplatesPage = () => {
                 localStorage.removeItem(CACHE_KEY);
             }
         }
-        // Always fetch fresh data in background
         loadAllData();
     }, []);
 
-    // Re-fetch user-specific data when auth changes
     useEffect(() => {
         if (isAuthenticated && token) {
             loadUserData();
         }
     }, [isAuthenticated, token]);
 
-    // Parallel loading of all public data
     const loadAllData = useCallback(async () => {
         try {
             const [templatesRes, categoriesRes] = await Promise.all([
@@ -93,19 +87,13 @@ export const TemplatesPage = () => {
                 fetch(`${AUTH_URL}/categories`)
             ]);
 
-            // Process templates
             if (templatesRes.ok) {
                 const templatesData = await templatesRes.json();
                 setTemplates(templatesData);
-                // Cache the templates
-                const cacheData: CachedData = {
-                    templates: templatesData,
-                    timestamp: Date.now()
-                };
+                const cacheData: CachedData = { templates: templatesData, timestamp: Date.now() };
                 localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
             }
 
-            // Process categories
             if (categoriesRes.ok) {
                 const categoriesData = await categoriesRes.json();
                 const customCats = categoriesData
@@ -120,17 +108,12 @@ export const TemplatesPage = () => {
         }
     }, []);
 
-    // Parallel loading of user-specific data
     const loadUserData = useCallback(async () => {
         if (!token) return;
         try {
             const [purchasesRes, favoritesRes] = await Promise.all([
-                fetch(`${AUTH_URL}/purchases`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`${AUTH_URL}/favorites`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
+                fetch(`${AUTH_URL}/purchases`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${AUTH_URL}/favorites`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             if (purchasesRes.ok) {
@@ -150,7 +133,6 @@ export const TemplatesPage = () => {
 
     const toggleFavorite = async (template: Template) => {
         if (!isAuthenticated) return;
-
         const isFavorite = favoriteIds.has(template.id);
         try {
             if (isFavorite) {
@@ -166,10 +148,7 @@ export const TemplatesPage = () => {
             } else {
                 await fetch(`${AUTH_URL}/favorites`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ templateId: template.id, title: template.title })
                 });
                 setFavoriteIds(prev => new Set([...prev, template.id]));
@@ -187,10 +166,7 @@ export const TemplatesPage = () => {
         try {
             const res = await fetch(`${AUTH_URL}/claim-free`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ templateId: template.id, title: template.title })
             });
             const data = await res.json();
@@ -211,30 +187,24 @@ export const TemplatesPage = () => {
             t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             t.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
-
         const matchesCategory = !selectedCategory || t.category === selectedCategory;
-
         return matchesSearch && matchesCategory;
     });
 
-    // Apply sorting
     const sortedTemplates = [...filteredTemplates].sort((a, b) => {
         if (sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
         if (sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
-        return 0; // recent = original order
+        return 0;
     });
 
     const getImageUrl = (template: Template) => {
-        if (template.imageFileId) {
-            return getTemplateImageUrl(template.id);
-        }
-        // Placeholder images based on category
+        if (template.imageFileId) return getTemplateImageUrl(template.id);
         const placeholders: Record<string, string> = {
-            bodas: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop',
-            cumpleanos: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
-            negocios: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop',
-            educacion: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop',
-            otros: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop'
+            infografia: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=600&fit=crop',
+            lineas_tiempo: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=600&fit=crop',
+            caratulas: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=600&fit=crop',
+            manualidades: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=400&h=600&fit=crop',
+            otros: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop'
         };
         return placeholders[template.category] || placeholders.otros;
     };
@@ -253,218 +223,193 @@ export const TemplatesPage = () => {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Header - Compact */}
-            <motion.div
-                className="py-6 md:py-8"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <h1 className="text-2xl md:text-4xl font-serif text-elegant-black">Explora Plantillas</h1>
-            </motion.div>
+        <div className="min-h-screen">
+            {/* Hero Section with Collage */}
+            <section className="py-8 md:py-12 px-4">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+                    <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
+                        <h1 className="text-3xl md:text-5xl font-serif text-elegant-black italic">LoreNotes</h1>
+                        <p className="text-elegant-gray mt-2 text-lg">Las mejores plantillas en un solo lugar</p>
+                    </motion.div>
 
-            {/* Search and Filters */}
-            <motion.div
-                className="bg-white p-4 rounded-2xl flex flex-col md:flex-row gap-4 mb-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-            >
-                {/* Search */}
-                <div className="flex-1 relative">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-elegant-light" />
-                    <input
-                        type="text"
-                        placeholder="Buscar plantillas..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-cream rounded-full border-none focus:outline-none focus:ring-2 focus:ring-elegant-black/10"
-                    />
+                    <motion.div
+                        className="relative h-48 md:h-64 hidden md:block"
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        {templates.slice(0, 4).map((template, idx) => (
+                            <motion.div
+                                key={template.id}
+                                className="absolute rounded-lg overflow-hidden shadow-xl"
+                                style={{
+                                    width: idx === 0 ? '45%' : '35%',
+                                    height: idx === 0 ? '100%' : '80%',
+                                    top: idx === 0 ? '0' : idx === 1 ? '10%' : idx === 2 ? '5%' : '15%',
+                                    left: idx === 0 ? '0' : idx === 1 ? '30%' : idx === 2 ? '55%' : '75%',
+                                    zIndex: 4 - idx,
+                                    rotate: idx === 0 ? -5 : idx === 1 ? 3 : idx === 2 ? -3 : 5,
+                                }}
+                                whileHover={{ scale: 1.05, zIndex: 10, rotate: 0 }}
+                            >
+                                <img src={getImageUrl(template)} alt={template.title} className="w-full h-full object-cover" />
+                            </motion.div>
+                        ))}
+                    </motion.div>
                 </div>
+            </section>
 
-                {/* Category Filter */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {/* Search Bar */}
+            <section className="px-4 pb-6">
+                <div className="max-w-2xl mx-auto">
+                    <div className="relative">
+                        <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-elegant-light" />
+                        <input
+                            type="text"
+                            placeholder="Buscar plantillas creativas..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-14 pr-6 py-4 bg-white rounded-full border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-elegant-black/10 text-lg"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Category Pills */}
+            <section className="px-4 pb-8">
+                <div className="flex flex-wrap justify-center gap-3">
                     <button
                         onClick={() => setSelectedCategory('')}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
-                            ${!selectedCategory ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
+                        className={`px-5 py-2 rounded-full border text-sm font-medium transition-all
+                            ${!selectedCategory ? 'bg-elegant-black text-white border-elegant-black' : 'bg-white text-elegant-gray border-gray-200 hover:border-gray-400'}`}
                     >
                         Todas
                     </button>
-                    {categories.map(cat => (
+                    {[...categories, ...dynamicCategories].map(cat => (
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
-                                ${selectedCategory === cat ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
-                        >
-                            {getCategoryLabel(cat)}
-                        </button>
-                    ))}
-                    {dynamicCategories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
-                                ${selectedCategory === cat ? 'bg-elegant-black text-white' : 'bg-cream text-elegant-gray hover:bg-cream-dark'}`}
+                            className={`px-5 py-2 rounded-full border text-sm font-medium transition-all
+                                ${selectedCategory === cat ? 'bg-elegant-black text-white border-elegant-black' : 'bg-white text-elegant-gray border-gray-200 hover:border-gray-400'}`}
                         >
                             {getCategoryLabel(cat)}
                         </button>
                     ))}
                 </div>
+            </section>
 
-                {/* Sort Options */}
-                <div className="flex items-center gap-2">
-                    <ArrowUpDown size={16} className="text-elegant-gray" />
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'recent' | 'price-low' | 'price-high')}
-                        className="bg-cream px-3 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-elegant-black/10"
-                    >
-                        <option value="recent">Recientes</option>
-                        <option value="price-low">Precio: Menor a Mayor</option>
-                        <option value="price-high">Precio: Mayor a Menor</option>
-                    </select>
-                </div>
-            </motion.div>
+            {/* Templates Grid - Masonry */}
+            <section className="px-4 pb-12">
+                <div className="max-w-7xl mx-auto">
+                    {loading ? (
+                        <SkeletonGrid count={8} />
+                    ) : sortedTemplates.length === 0 ? (
+                        <div className="text-center py-16">
+                            <p className="text-xl text-gray-500">No se encontraron plantillas 😢</p>
+                            <p className="text-gray-400 mt-2">Prueba con otra búsqueda o categoría</p>
+                        </div>
+                    ) : (
+                        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+                            {sortedTemplates.map((template, idx) => (
+                                <motion.div
+                                    key={template.id}
+                                    className="break-inside-avoid mb-5 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all group cursor-pointer"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.03 }}
+                                    onClick={() => setPreviewModal({ isOpen: true, template })}
+                                >
+                                    {/* Image Container */}
+                                    <div
+                                        className="relative overflow-hidden"
+                                        style={{ aspectRatio: idx % 4 === 0 ? '3/4' : idx % 4 === 1 ? '4/5' : idx % 4 === 2 ? '3/3.5' : '4/4.5' }}
+                                    >
+                                        <LazyImage
+                                            src={getImageUrl(template)}
+                                            alt={template.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            fallbackSrc="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop"
+                                        />
 
-            {/* Templates Grid */}
-            {loading ? (
-                <SkeletonGrid count={6} />
-            ) : sortedTemplates.length === 0 ? (
-                <div className="text-center py-12 bg-white/90 rounded-xl border-4 border-ink-black">
-                    <p className="text-xl text-gray-500">No se encontraron plantillas 😢</p>
-                    <p className="text-gray-400 mt-2">Prueba con otra búsqueda o categoría</p>
-                </div>
-            ) : (
-                /* Pinterest/Masonry Style Grid */
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-                    {sortedTemplates.map((template, idx) => (
-                        <motion.div
-                            key={template.id}
-                            className="break-inside-avoid mb-4 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all group cursor-pointer"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.03 }}
-                            onClick={() => setPreviewModal({ isOpen: true, template })}
-                        >
-                            {/* Large Image - Variable Height for Masonry Effect */}
-                            <div
-                                className="relative overflow-hidden bg-cream"
-                                style={{
-                                    aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '4/5' : '3/3.5'
-                                }}
-                            >
-                                <LazyImage
-                                    src={getImageUrl(template)}
-                                    alt={template.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    fallbackSrc="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop"
-                                />
+                                        {/* Price Badge */}
+                                        <div className="absolute top-3 right-3 bg-white text-elegant-black text-sm font-bold px-3 py-1 rounded-md shadow-md">
+                                            {(template.price || 0) === 0 ? 'GRATIS' : `$${(template.price || 0).toFixed(0)}`}
+                                        </div>
 
-                                {/* Hover Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                                    <div className="flex gap-2 mb-3">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setPreviewModal({ isOpen: true, template });
-                                            }}
-                                            className="p-3 rounded-full bg-white/90 text-elegant-black hover:bg-white transition-colors"
-                                            title="Ver vista previa"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-                                        {isAuthenticated && (
+                                        {/* Hover Actions */}
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleFavorite(template);
-                                                }}
-                                                className={`p-3 rounded-full transition-colors ${favoriteIds.has(template.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-600 hover:bg-red-100'}`}
-                                                title={favoriteIds.has(template.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                                onClick={(e) => { e.stopPropagation(); setPreviewModal({ isOpen: true, template }); }}
+                                                className="p-3 rounded-full bg-white text-elegant-black hover:scale-110 transition-transform"
                                             >
-                                                <Heart size={18} fill={favoriteIds.has(template.id) ? 'currentColor' : 'none'} />
+                                                <Eye size={20} />
                                             </button>
-                                        )}
-                                        {purchasedIds.has(template.id) ? (
-                                            <a
-                                                href={`${TEMPLATES_URL}/${template.id}/download`}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
-                                                title="Descargar"
-                                                download
-                                            >
-                                                <Download size={18} />
-                                            </a>
-                                        ) : (template.price || 0) === 0 ? (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    claimFreeTemplate(template);
-                                                }}
-                                                className="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
-                                                title="Obtener gratis"
-                                            >
-                                                <Gift size={18} />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    if (!template.id) return;
-                                                    const inCart = cart.some(item => item.templateId === template.id);
-                                                    if (inCart || addedToCart.has(template.id)) return;
-                                                    try {
-                                                        const result = await addToCart({
-                                                            templateId: template.id,
-                                                            title: template.title,
-                                                            price: template.price || 0
-                                                        });
-                                                        if (result.success) {
-                                                            setAddedToCart(prev => new Set([...prev, template.id]));
-                                                        }
-                                                    } catch (error) {
-                                                        console.error('Error:', error);
-                                                    }
-                                                }}
-                                                className={`p-3 rounded-full transition-colors ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                    ? 'bg-green-500 text-white'
-                                                    : 'bg-white/90 text-elegant-black hover:bg-white'
-                                                    }`}
-                                                title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
-                                            >
-                                                {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                    ? <Check size={18} />
-                                                    : <ShoppingCart size={18} />}
-                                            </button>
-                                        )}
+                                            {isAuthenticated && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleFavorite(template); }}
+                                                    className={`p-3 rounded-full transition-transform hover:scale-110 ${favoriteIds.has(template.id) ? 'bg-red-500 text-white' : 'bg-white text-elegant-black'}`}
+                                                >
+                                                    <Heart size={20} fill={favoriteIds.has(template.id) ? 'currentColor' : 'none'} />
+                                                </button>
+                                            )}
+                                            {purchasedIds.has(template.id) ? (
+                                                <a
+                                                    href={`${TEMPLATES_URL}/${template.id}/download`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="p-3 rounded-full bg-green-500 text-white hover:scale-110 transition-transform"
+                                                >
+                                                    <Download size={20} />
+                                                </a>
+                                            ) : (template.price || 0) === 0 ? (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); claimFreeTemplate(template); }}
+                                                    className="p-3 rounded-full bg-green-500 text-white hover:scale-110 transition-transform"
+                                                >
+                                                    <Gift size={20} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (!template.id) return;
+                                                        if (cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)) return;
+                                                        try {
+                                                            const result = await addToCart({ templateId: template.id, title: template.title, price: template.price || 0 });
+                                                            if (result.success) setAddedToCart(prev => new Set([...prev, template.id]));
+                                                        } catch (error) { console.error('Error:', error); }
+                                                    }}
+                                                    className={`p-3 rounded-full transition-transform hover:scale-110 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id) ? 'bg-green-500 text-white' : 'bg-white text-elegant-black'}`}
+                                                >
+                                                    {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id) ? <Check size={20} /> : <ShoppingCart size={20} />}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Price Badge */}
-                                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-elegant-black text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-                                    {(template.price || 0) === 0 ? 'GRATIS' : `$${(template.price || 0).toFixed(2)}`}
-                                </div>
+                                    {/* Card Content */}
+                                    <div className="p-4">
+                                        <h3 className="font-semibold text-elegant-black line-clamp-1">{template.title}</h3>
+                                        <p className="text-elegant-gray text-sm mt-1 line-clamp-2">{template.description || template.purpose || 'Plantilla creativa'}</p>
 
-                                {/* Category Tag */}
-                                <div className="absolute top-3 left-3 bg-elegant-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                                    {getCategoryLabel(template.category)}
-                                </div>
-                            </div>
-
-                            {/* Minimal Content Below Image */}
-                            <div className="p-4">
-                                <h3 className="font-serif font-medium text-elegant-black line-clamp-1 group-hover:text-purple-600 transition-colors">
-                                    {template.title}
-                                </h3>
-                                <p className="text-elegant-gray text-sm mt-1 line-clamp-1">
-                                    {template.description || template.purpose}
-                                </p>
-                            </div>
-                        </motion.div>
-                    ))}
+                                        {/* Rating & Author */}
+                                        <div className="flex items-center justify-between mt-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
+                                                    {(template.author || 'A').charAt(0).toUpperCase()}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Star key={star} size={14} className={star <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            )}
+            </section>
 
             {/* Template Preview Modal */}
             <AnimatePresence>
@@ -481,70 +426,70 @@ export const TemplatesPage = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border-4 border-ink-black overflow-hidden max-h-[90vh] flex flex-col"
+                            className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
                         >
-                            {/* PDF Preview */}
-                            <div className="relative h-64 md:h-80 bg-gray-200">
-                                <iframe
-                                    src={`${TEMPLATES_URL}/${previewModal.template.id}/preview#toolbar=0&navpanes=0&scrollbar=0`}
-                                    className="w-full h-full border-0 pointer-events-none"
-                                    title={`Vista previa de ${previewModal.template.title}`}
-                                />
-                                {/* Overlay to block right-click and interactions */}
-                                <div
-                                    className="absolute inset-0 z-5"
-                                    onContextMenu={(e) => e.preventDefault()}
-                                    style={{ userSelect: 'none' }}
+                            <div className="relative">
+                                <img
+                                    src={getImageUrl(previewModal.template)}
+                                    alt={previewModal.template.title}
+                                    className="w-full h-64 object-cover"
                                 />
                                 <button
                                     onClick={() => setPreviewModal({ isOpen: false, template: null })}
-                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-10"
+                                    className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
-                                <div className="absolute bottom-3 left-3 bg-accent-craft text-ink-black text-sm font-bold px-3 py-1 rounded-full border-2 border-ink-black z-10">
-                                    {getCategoryLabel(previewModal.template.category)}
-                                </div>
                             </div>
-
-                            {/* Content */}
                             <div className="p-6">
-                                <h3 className="font-heading font-bold text-2xl text-ink-black mb-2">
-                                    {previewModal.template.title}
-                                </h3>
-                                <p className="text-gray-600 mb-4 line-clamp-3">
-                                    {previewModal.template.description || previewModal.template.purpose || 'Plantilla de diseño creativo para tus proyectos.'}
-                                </p>
+                                <span className="text-xs text-elegant-light uppercase tracking-wider">
+                                    {getCategoryLabel(previewModal.template.category)}
+                                </span>
+                                <h2 className="text-2xl font-serif text-elegant-black mt-1">{previewModal.template.title}</h2>
+                                <p className="text-elegant-gray mt-3">{previewModal.template.description || previewModal.template.purpose}</p>
 
-                                {/* Price */}
-                                <div className="flex items-center gap-2 mb-6">
-                                    <DollarSign size={24} className="text-primary-craft" />
-                                    <span className="text-3xl font-bold text-primary-craft">
-                                        {(previewModal.template.price || 0).toFixed(2)}
+                                <div className="flex items-center gap-2 mt-4">
+                                    <DollarSign size={20} className="text-green-600" />
+                                    <span className="text-2xl font-bold text-elegant-black">
+                                        {(previewModal.template.price || 0) === 0 ? 'GRATIS' : `$${(previewModal.template.price || 0).toFixed(2)}`}
                                     </span>
                                 </div>
 
-                                {/* Tutorial Button */}
-                                {previewModal.template.tutorialVideoUrl ? (
-                                    <button
-                                        onClick={() => {
-                                            setVideoModal({
-                                                isOpen: true,
-                                                url: previewModal.template!.tutorialVideoUrl!,
-                                                title: previewModal.template!.title
-                                            });
-                                            setPreviewModal({ isOpen: false, template: null });
-                                        }}
-                                        className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-heading hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Play size={20} />
-                                        Ver Tutorial
-                                    </button>
-                                ) : (
-                                    <p className="text-center text-gray-400 text-sm">
-                                        📹 Tutorial próximamente disponible
-                                    </p>
-                                )}
+                                <div className="flex gap-3 mt-6">
+                                    {previewModal.template.tutorialVideoUrl && (
+                                        <button
+                                            onClick={() => {
+                                                setVideoModal({ isOpen: true, url: previewModal.template!.tutorialVideoUrl!, title: previewModal.template!.title });
+                                                setPreviewModal({ isOpen: false, template: null });
+                                            }}
+                                            className="flex-1 py-3 px-4 bg-purple-500 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors"
+                                        >
+                                            <Play size={18} /> Ver Tutorial
+                                        </button>
+                                    )}
+                                    {purchasedIds.has(previewModal.template.id) ? (
+                                        <a
+                                            href={`${TEMPLATES_URL}/${previewModal.template.id}/download`}
+                                            className="flex-1 py-3 px-4 bg-green-500 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
+                                        >
+                                            <Download size={18} /> Descargar
+                                        </a>
+                                    ) : (
+                                        <button
+                                            onClick={async () => {
+                                                if ((previewModal.template!.price || 0) === 0) {
+                                                    await claimFreeTemplate(previewModal.template!);
+                                                } else {
+                                                    await addToCart({ templateId: previewModal.template!.id, title: previewModal.template!.title, price: previewModal.template!.price || 0 });
+                                                }
+                                                setPreviewModal({ isOpen: false, template: null });
+                                            }}
+                                            className="flex-1 py-3 px-4 bg-elegant-black text-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                                        >
+                                            <ShoppingCart size={18} /> {(previewModal.template.price || 0) === 0 ? 'Obtener Gratis' : 'Agregar al Carrito'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
@@ -566,26 +511,20 @@ export const TemplatesPage = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border-4 border-ink-black"
+                            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
                         >
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-heading text-ink-black">📹 Video Tutorial</h3>
-                                <button
-                                    onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                >
+                                <h3 className="text-xl font-serif text-elegant-black">📹 Video Tutorial</h3>
+                                <button onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })} className="p-2 hover:bg-gray-100 rounded-full">
                                     <X size={20} />
                                 </button>
                             </div>
                             <p className="text-gray-600 mb-4">{videoModal.title}</p>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Aprende cómo usar esta plantilla con nuestro video tutorial en redes sociales.
-                            </p>
                             <a
                                 href={videoModal.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="block w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center rounded-xl font-heading hover:from-purple-600 hover:to-pink-600 transition-all"
+                                className="block w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
                             >
                                 🎬 Ver Tutorial
                             </a>
