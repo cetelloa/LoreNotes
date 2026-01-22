@@ -14,7 +14,7 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
 // ========== PROTECTED ROUTES (require auth) ==========
-router.get('/me', adminController.getMe);
+router.get('/me', authMiddleware, adminController.getMe);
 
 // Profile management
 router.put('/profile', authMiddleware, authController.updateProfile);
@@ -64,14 +64,19 @@ router.post('/categories', authMiddleware, categoryController.createCategory);
 router.delete('/categories/:id', authMiddleware, categoryController.deleteCategory);
 
 // ========== REVIEWS SYSTEM ==========
-// Public: get reviews and stats
-router.get('/reviews/:templateId', authController.getTemplateReviews);
-router.get('/reviews/stats/:templateId', authController.getReviewStats);
-router.post('/reviews/bulk-stats', authController.getBulkReviewStats);
+// IMPORTANT: Specific routes MUST come before generic /:templateId route
+// Otherwise Express will match "stats" or "mine" as a templateId
 
-// Protected: create, update, delete reviews
+// Public routes (specific paths first)
+router.post('/reviews/bulk-stats', authController.getBulkReviewStats);
+router.get('/reviews/stats/:templateId', authController.getReviewStats);
+
+// Protected routes (specific paths)
 router.post('/reviews', authMiddleware, authController.createOrUpdateReview);
 router.get('/reviews/mine/:templateId', authMiddleware, authController.getMyReview);
 router.delete('/reviews/:templateId', authMiddleware, authController.deleteReview);
+
+// Generic route LAST (catches all other /reviews/:id patterns)
+router.get('/reviews/:templateId', authController.getTemplateReviews);
 
 module.exports = router;

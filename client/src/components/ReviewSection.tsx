@@ -250,7 +250,7 @@ export const ReviewSection = ({ templateId, hasPurchased }: ReviewSectionProps) 
                     <p className="text-center text-elegant-gray py-8">Aún no hay reviews. ¡Sé el primero!</p>
                 ) : (
                     <AnimatePresence>
-                        {reviews.filter(r => r.userId !== (user as any)?._id).map((review) => (
+                        {reviews.filter(r => r.userId !== user?.id).map((review) => (
                             <motion.div
                                 key={review._id}
                                 initial={{ opacity: 0, y: 10 }}
