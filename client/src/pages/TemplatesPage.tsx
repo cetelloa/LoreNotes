@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingCart, Eye, Check, X, Download, Play, Heart, Gift, Star, DollarSign } from 'lucide-react';
+import { Search, ShoppingCart, Eye, Check, X, Download, Play, Heart, Gift, Star, DollarSign, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl, AUTH_URL } from '../config';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,7 +36,6 @@ export const TemplatesPage = () => {
     const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
     const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({ isOpen: false, url: '', title: '' });
     const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; template: Template | null }>({ isOpen: false, template: null });
-    const [sortBy] = useState<'recent' | 'price-low' | 'price-high'>('recent');
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const { addToCart, cart } = useCart();
     const { token, isAuthenticated } = useAuth();
@@ -44,6 +43,12 @@ export const TemplatesPage = () => {
     const categories = ['infografia', 'lineas_tiempo', 'caratulas', 'manualidades', 'separadores', 'mapas_mentales'];
     const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
     const [reviewStats, setReviewStats] = useState<Record<string, { averageRating: number; totalReviews: number }>>({});
+
+    // Advanced filters
+    const [showFilters, setShowFilters] = useState(false);
+    const [priceRange, setPriceRange] = useState<'all' | 'free' | '0-5' | '5-10' | '10+'>('all');
+    const [minRating, setMinRating] = useState<number>(0);
+    const [sortBy, setSortBy] = useState<'recent' | 'price-low' | 'price-high' | 'rating'>('recent');
 
     useEffect(() => {
         const hash = location.hash.replace('#', '');
@@ -154,13 +159,31 @@ export const TemplatesPage = () => {
     const filteredTemplates = templates.filter(t => {
         const matchesSearch = !searchTerm || t.title?.toLowerCase().includes(searchTerm.toLowerCase()) || t.description?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = !selectedCategory || t.category === selectedCategory;
-        return matchesSearch && matchesCategory;
+
+        // Price filter
+        let matchesPrice = true;
+        const price = t.price || 0;
+        if (priceRange === 'free') matchesPrice = price === 0;
+        else if (priceRange === '0-5') matchesPrice = price > 0 && price <= 5;
+        else if (priceRange === '5-10') matchesPrice = price > 5 && price <= 10;
+        else if (priceRange === '10+') matchesPrice = price > 10;
+
+        // Rating filter
+        const avgRating = reviewStats[t.id]?.averageRating || 0;
+        const matchesRating = avgRating >= minRating;
+
+        return matchesSearch && matchesCategory && matchesPrice && matchesRating;
     });
 
     const sortedTemplates = [...filteredTemplates].sort((a, b) => {
         if (sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
         if (sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
-        return 0;
+        if (sortBy === 'rating') {
+            const ratingA = reviewStats[a.id]?.averageRating || 0;
+            const ratingB = reviewStats[b.id]?.averageRating || 0;
+            return ratingB - ratingA;
+        }
+        return 0; // recent - keep original order
     });
 
     const getImageUrl = (template: Template) => {
@@ -214,7 +237,7 @@ export const TemplatesPage = () => {
             </section>
 
             {/* Category Pills */}
-            <section className="px-4 pb-8">
+            <section className="px-4 pb-4">
                 <div className="flex flex-wrap justify-center gap-3">
                     <button
                         onClick={() => setSelectedCategory('')}
@@ -231,6 +254,99 @@ export const TemplatesPage = () => {
                             {getCategoryLabel(cat)}
                         </button>
                     ))}
+                </div>
+            </section>
+
+            {/* Advanced Filters */}
+            <section className="px-4 pb-6">
+                <div className="max-w-4xl mx-auto">
+                    {/* Toggle Filters Button */}
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 mx-auto mb-4 text-elegant-gray hover:text-pastel-purple transition-colors"
+                    >
+                        <SlidersHorizontal size={18} />
+                        <span className="text-sm font-medium">Filtros avanzados</span>
+                        <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Filters Panel */}
+                    <AnimatePresence>
+                        {showFilters && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="bg-white rounded-2xl p-6 shadow-lg border border-pastel-lavender/30 grid md:grid-cols-3 gap-6">
+                                    {/* Price Filter */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-elegant-black mb-3">💰 Precio</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {[
+                                                { value: 'all', label: 'Todos' },
+                                                { value: 'free', label: 'Gratis' },
+                                                { value: '0-5', label: '$0-5' },
+                                                { value: '5-10', label: '$5-10' },
+                                                { value: '10+', label: '$10+' }
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => setPriceRange(opt.value as typeof priceRange)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${priceRange === opt.value ? 'bg-pastel-purple text-white' : 'bg-pastel-lavender/30 text-elegant-gray hover:bg-pastel-lavender/50'}`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Rating Filter */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-elegant-black mb-3">⭐ Rating mínimo</label>
+                                        <div className="flex gap-2">
+                                            {[0, 3, 4, 5].map(rating => (
+                                                <button
+                                                    key={rating}
+                                                    onClick={() => setMinRating(rating)}
+                                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${minRating === rating ? 'bg-pastel-purple text-white' : 'bg-pastel-lavender/30 text-elegant-gray hover:bg-pastel-lavender/50'}`}
+                                                >
+                                                    {rating === 0 ? 'Todos' : (
+                                                        <>
+                                                            {rating}+ <Star size={12} className="fill-current" />
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Sort By */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-elegant-black mb-3">📊 Ordenar por</label>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                                            className="w-full px-4 py-2 rounded-lg border border-pastel-lavender bg-white text-elegant-black focus:outline-none focus:ring-2 focus:ring-pastel-purple/30"
+                                        >
+                                            <option value="recent">Más recientes</option>
+                                            <option value="price-low">Precio: menor a mayor</option>
+                                            <option value="price-high">Precio: mayor a menor</option>
+                                            <option value="rating">Mejor calificados</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Results count */}
+                    <div className="text-center mt-4">
+                        <span className="text-sm text-elegant-gray">
+                            {sortedTemplates.length} {sortedTemplates.length === 1 ? 'plantilla encontrada' : 'plantillas encontradas'}
+                        </span>
+                    </div>
                 </div>
             </section>
 
