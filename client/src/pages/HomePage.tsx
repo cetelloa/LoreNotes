@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, FileText, Clock, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, Palette, Download, Wand2 } from 'lucide-react';
 import { TEMPLATES_URL, getTemplateImageUrl } from '../config';
 
 interface Template {
@@ -14,13 +14,6 @@ interface Template {
     imageFileId: string;
     downloadCount: number;
 }
-
-const categories = [
-    { id: 'infografia', label: 'Infografía', icon: FileText },
-    { id: 'lineas_tiempo', label: 'Líneas de tiempo', icon: Clock },
-    { id: 'caratulas', label: 'Carátulas', icon: BookOpen },
-    { id: 'manualidades', label: 'Manualidades', icon: Sparkles },
-];
 
 const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
@@ -35,6 +28,12 @@ const getCategoryLabel = (category: string) => {
     return labels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace(/_/g, ' ');
 };
 
+const benefits = [
+    { icon: Palette, title: 'Diseños Únicos', description: 'Plantillas exclusivas y creativas' },
+    { icon: Download, title: 'Descarga Instantánea', description: 'Acceso inmediato a tus compras' },
+    { icon: Wand2, title: 'Fácil de Editar', description: 'Personaliza a tu gusto' },
+];
+
 export const HomePage = () => {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +46,7 @@ export const HomePage = () => {
                     const data = await res.json();
                     const sorted = data.sort((a: Template, b: Template) =>
                         (b.downloadCount || 0) - (a.downloadCount || 0)
-                    ).slice(0, 6);
+                    ).slice(0, 3);
                     setTemplates(sorted);
                 }
             } catch (error) {
@@ -60,190 +59,211 @@ export const HomePage = () => {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section - Elegant */}
-            <section className="py-16 md:py-24 px-6">
-                <div className="max-w-4xl mx-auto text-center">
-                    <motion.h1
-                        className="text-4xl md:text-6xl font-serif text-elegant-black mb-6 leading-tight"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        Las mejores plantillas<br />
-                        <span className="italic">en un solo lugar</span>
-                    </motion.h1>
-
-                    <motion.p
-                        className="text-elegant-gray text-lg md:text-xl mb-10 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        Descubre plantillas creativas para tus proyectos especiales
-                    </motion.p>
-
+            {/* Hero Section - Split Layout */}
+            <section className="py-12 md:py-20 px-6">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                    {/* Left - Text */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6 }}
                     >
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-elegant-black mb-6 leading-tight">
+                            Las mejores plantillas
+                            <br />
+                            <span className="italic text-elegant-gray">en un solo lugar</span>
+                        </h1>
+
+                        <p className="text-elegant-gray text-lg mb-8 max-w-md">
+                            Encuentra inspiración y herramientas creativas premium para tus proyectos especiales.
+                        </p>
+
                         <Link to="/templates">
-                            <button className="bg-elegant-black text-white px-8 py-3 rounded-full text-lg font-medium hover:bg-gray-800 transition-all hover:shadow-lg">
-                                Ver Plantillas
-                            </button>
+                            <motion.button
+                                className="bg-elegant-black text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-800 transition-all hover:shadow-xl"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Ver Todas las Plantillas
+                            </motion.button>
                         </Link>
+                    </motion.div>
+
+                    {/* Right - Floating Templates Collage */}
+                    <motion.div
+                        className="relative h-[400px] md:h-[450px]"
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                        {templates.slice(0, 3).map((template, idx) => (
+                            <motion.div
+                                key={template.id}
+                                className="absolute rounded-2xl overflow-hidden shadow-2xl border-4 border-white"
+                                style={{
+                                    width: idx === 0 ? '70%' : '55%',
+                                    height: idx === 0 ? '85%' : '70%',
+                                    top: idx === 0 ? '5%' : idx === 1 ? '15%' : '25%',
+                                    left: idx === 0 ? '25%' : idx === 1 ? '0' : '40%',
+                                    zIndex: idx === 0 ? 3 : idx === 1 ? 2 : 1,
+                                    rotate: idx === 0 ? 3 : idx === 1 ? -5 : 8,
+                                }}
+                                whileHover={{ scale: 1.05, zIndex: 10, rotate: 0 }}
+                                transition={{ type: 'spring', stiffness: 300 }}
+                            >
+                                <img
+                                    src={getTemplateImageUrl(template.id)}
+                                    alt={template.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-158628138034${idx}-632531db7ed4?w=400&h=500&fit=crop`;
+                                    }}
+                                />
+                            </motion.div>
+                        ))}
+                        {/* Decorative elements */}
+                        <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-pink-200/50 rounded-full blur-2xl" />
+                        <div className="absolute -top-4 -right-4 w-32 h-32 bg-purple-200/50 rounded-full blur-2xl" />
                     </motion.div>
                 </div>
             </section>
 
-            {/* Categories Section */}
-            <section className="py-16 px-6 bg-cream-dark/30">
-                <div className="max-w-6xl mx-auto">
-                    <motion.h2
-                        className="text-3xl md:text-4xl font-serif text-center mb-12"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                    >
-                        Categorías
-                    </motion.h2>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {categories.map((cat, idx) => (
-                            <Link key={cat.id} to={`/templates?cat=${cat.id}`}>
-                                <motion.div
-                                    className="bg-white p-8 rounded-2xl text-center hover:shadow-lg transition-all cursor-pointer group"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    whileHover={{ y: -4 }}
-                                >
-                                    <cat.icon className="mx-auto mb-4 text-elegant-gray group-hover:text-elegant-black transition-colors" size={32} strokeWidth={1.5} />
-                                    <p className="font-medium text-elegant-black">{cat.label}</p>
-                                </motion.div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
             {/* Featured Templates */}
-            <section className="py-16 px-6">
+            <section className="py-16 px-6 bg-white/50">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex justify-between items-center mb-10">
-                        <h2 className="text-3xl md:text-4xl font-serif">Más Populares</h2>
-                        <Link to="/templates" className="text-elegant-gray hover:text-elegant-black flex items-center gap-1 transition-colors">
-                            Ver todas <ArrowRight size={18} />
+                        <h2 className="text-2xl md:text-3xl font-serif text-elegant-black">
+                            Plantillas Destacadas
+                        </h2>
+                        <Link
+                            to="/templates"
+                            className="text-elegant-gray hover:text-elegant-black flex items-center gap-1 transition-colors group"
+                        >
+                            Ver todas
+                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-12">
-                            <div className="animate-spin w-8 h-8 border-2 border-elegant-black border-t-transparent rounded-full mx-auto"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="bg-cream-dark/50 rounded-2xl h-80 animate-pulse" />
+                            ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {templates.map((template, idx) => (
-                                <motion.div
-                                    key={template.id}
-                                    className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all group"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: idx * 0.1 }}
-                                >
-                                    {/* Image */}
-                                    <div className="aspect-[4/3] bg-cream-dark overflow-hidden">
-                                        <img
-                                            src={getTemplateImageUrl(template.imageFileId)}
-                                            alt={template.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop';
-                                            }}
-                                        />
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="p-5">
-                                        <span className="text-xs text-elegant-light uppercase tracking-wider">
-                                            {getCategoryLabel(template.category)}
-                                        </span>
-                                        <h3 className="font-serif text-lg text-elegant-black mt-1 line-clamp-1">
-                                            {template.title}
-                                        </h3>
-                                        <p className="text-elegant-gray text-sm mt-2 line-clamp-2">
-                                            {template.description || template.purpose || 'Plantilla creativa'}
-                                        </p>
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <span className="text-elegant-black font-medium">
-                                                ${(template.price || 0).toFixed(2)}
-                                            </span>
-                                            <Link
-                                                to="/templates"
-                                                className="text-sm text-elegant-gray hover:text-elegant-black transition-colors"
-                                            >
-                                                Ver más →
-                                            </Link>
+                                <Link key={template.id} to={`/templates#${template.id}`}>
+                                    <motion.div
+                                        className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all group cursor-pointer"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: idx * 0.1 }}
+                                        whileHover={{ y: -8 }}
+                                    >
+                                        {/* Large Image */}
+                                        <div className="aspect-[3/4] bg-cream-dark overflow-hidden">
+                                            <img
+                                                src={getTemplateImageUrl(template.id)}
+                                                alt={template.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop';
+                                                }}
+                                            />
                                         </div>
-                                    </div>
-                                </motion.div>
+
+                                        {/* Minimal Content */}
+                                        <div className="p-5">
+                                            <span className="text-xs text-elegant-light uppercase tracking-wider">
+                                                {getCategoryLabel(template.category)}
+                                            </span>
+                                            <h3 className="font-serif text-lg text-elegant-black mt-1 line-clamp-1">
+                                                {template.title}
+                                            </h3>
+                                            <div className="mt-3 flex items-center justify-between">
+                                                <span className="text-elegant-black font-semibold text-lg">
+                                                    ${(template.price || 0).toFixed(2)}
+                                                </span>
+                                                <span className="text-sm text-elegant-gray group-hover:text-elegant-black transition-colors flex items-center gap-1">
+                                                    Ver detalles <ArrowRight size={14} />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </Link>
                             ))}
                         </div>
                     )}
                 </div>
             </section>
 
-            {/* Donation Section - HIDDEN TEMPORARILY
+            {/* Benefits Section */}
             <section className="py-16 px-6">
-                <motion.div
-                    className="max-w-2xl mx-auto text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                >
-                    <div className="bg-gradient-to-br from-pink-50 via-white to-lavender-soft/50 rounded-3xl p-8 md:p-12 border-2 border-pink-200 shadow-lg">
-                        <div className="w-16 h-16 mx-auto mb-6 bg-pink-100 rounded-full flex items-center justify-center">
-                            <Heart size={32} className="text-pink-500" fill="currentColor" />
-                        </div>
-                        <h2 className="text-2xl md:text-3xl font-serif text-elegant-black mb-4">
-                            ¿Te gusta nuestro trabajo?
-                        </h2>
-                        <p className="text-elegant-gray mb-6 max-w-md mx-auto">
-                            Si nuestras plantillas te han sido útiles, considera apoyarnos con una pequeña donación.
-                            ¡Cada aporte nos ayuda a seguir creando contenido de calidad! ☕💖
-                        </p>
-                        <a
-                            href="https://www.paypal.com/donate/?hosted_button_id=TU_BOTON_ID"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-full font-medium hover:from-pink-600 hover:to-rose-600 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                        >
-                            <Heart size={18} />
-                            Donar con PayPal
-                        </a>
-                        <p className="text-xs text-elegant-light mt-4">
-                            Serás redirigido a PayPal de forma segura
-                        </p>
+                <div className="max-w-4xl mx-auto">
+                    <motion.h2
+                        className="text-2xl md:text-3xl font-serif text-center mb-12 text-elegant-black"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                    >
+                        ¿Por qué LoreNotes?
+                    </motion.h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {benefits.map((benefit, idx) => (
+                            <motion.div
+                                key={benefit.title}
+                                className="text-center"
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1 }}
+                            >
+                                <div className="w-16 h-16 mx-auto mb-4 bg-cream rounded-2xl flex items-center justify-center">
+                                    <benefit.icon size={28} className="text-elegant-gray" strokeWidth={1.5} />
+                                </div>
+                                <h3 className="font-medium text-elegant-black mb-2">{benefit.title}</h3>
+                                <p className="text-elegant-gray text-sm">{benefit.description}</p>
+                            </motion.div>
+                        ))}
                     </div>
-                </motion.div>
+                </div>
             </section>
-            */}
 
             {/* CTA Section */}
-            <section className="py-20 px-6 bg-lavender-soft/30">
+            <section className="py-16 px-6 bg-elegant-black text-white">
                 <div className="max-w-3xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-4xl font-serif mb-6">
+                    <motion.h2
+                        className="text-2xl md:text-3xl font-serif mb-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
                         ¿Listo para crear algo increíble?
-                    </h2>
-                    <p className="text-elegant-gray mb-8">
+                    </motion.h2>
+                    <motion.p
+                        className="text-gray-300 mb-8"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                    >
                         Explora nuestra colección de plantillas y encuentra la perfecta para tu proyecto.
-                    </p>
-                    <Link to="/templates">
-                        <button className="bg-elegant-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
-                            Explorar Plantillas
-                        </button>
-                    </Link>
+                    </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <Link to="/templates">
+                            <button className="bg-white text-elegant-black px-8 py-4 rounded-full font-medium hover:bg-gray-100 transition-colors">
+                                Explorar Plantillas
+                            </button>
+                        </Link>
+                    </motion.div>
                 </div>
             </section>
         </div>

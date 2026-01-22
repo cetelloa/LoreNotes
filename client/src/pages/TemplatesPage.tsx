@@ -254,14 +254,13 @@ export const TemplatesPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
+            {/* Header - Compact */}
             <motion.div
-                className="py-8 md:py-12 text-center"
+                className="py-6 md:py-8"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-3xl md:text-5xl font-serif text-elegant-black mb-3">Plantillas</h1>
-                <p className="text-elegant-gray">Encuentra la plantilla perfecta para tu proyecto</p>
+                <h1 className="text-2xl md:text-4xl font-serif text-elegant-black">Explora Plantillas</h1>
             </motion.div>
 
             {/* Search and Filters */}
@@ -337,103 +336,84 @@ export const TemplatesPage = () => {
                     <p className="text-gray-400 mt-2">Prueba con otra búsqueda o categoría</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                /* Pinterest/Masonry Style Grid */
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
                     {sortedTemplates.map((template, idx) => (
                         <motion.div
                             key={template.id}
-                            className="bg-white rounded-xl border-4 border-ink-black overflow-hidden shadow-[4px_4px_0px_rgba(45,49,66,0.2)] hover:shadow-[6px_6px_0px_rgba(45,49,66,0.3)] transition-shadow"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            whileHover={{ y: -4 }}
+                            className="break-inside-avoid mb-4 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all group cursor-pointer"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: idx * 0.03 }}
+                            onClick={() => setPreviewModal({ isOpen: true, template })}
                         >
-                            {/* Image */}
-                            <div className="relative h-40 md:h-48 overflow-hidden bg-gray-100">
+                            {/* Large Image - Variable Height for Masonry Effect */}
+                            <div
+                                className="relative overflow-hidden bg-cream"
+                                style={{
+                                    aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '4/5' : '3/3.5'
+                                }}
+                            >
                                 <LazyImage
                                     src={getImageUrl(template)}
                                     alt={template.title}
-                                    className="w-full h-full object-cover"
-                                    fallbackSrc="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    fallbackSrc="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=600&fit=crop"
                                 />
-                                <div className="absolute top-2 right-2 bg-accent-craft text-ink-black text-xs font-bold px-2 py-1 rounded-full border-2 border-ink-black">
-                                    {getCategoryLabel(template.category)}
-                                </div>
-                                {isAuthenticated && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleFavorite(template);
-                                        }}
-                                        className={`absolute top-2 left-2 p-2 rounded-full border-2 border-ink-black transition-all ${favoriteIds.has(template.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-600 hover:bg-red-100'}`}
-                                        title={favoriteIds.has(template.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                                    >
-                                        <Heart size={16} fill={favoriteIds.has(template.id) ? 'currentColor' : 'none'} />
-                                    </button>
-                                )}
-                            </div>
 
-                            {/* Content */}
-                            <div className="p-4">
-                                <h3 className="font-heading font-bold text-lg text-ink-black line-clamp-1">{template.title}</h3>
-                                <p className="text-gray-500 text-sm mt-1 line-clamp-2">{template.description || template.purpose}</p>
-
-                                {/* Meta */}
-                                <div className="flex items-center justify-between mt-4">
-                                    <div className="flex items-center gap-1 text-primary-craft font-bold">
-                                        <DollarSign size={16} />
-                                        <span>{(template.price || 0).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex gap-2 relative z-10">
+                                {/* Hover Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                    <div className="flex gap-2 mb-3">
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setPreviewModal({ isOpen: true, template });
                                             }}
-                                            className="p-3 rounded-lg bg-purple-500 text-white hover:bg-purple-600 active:bg-purple-700 transition-colors"
+                                            className="p-3 rounded-full bg-white/90 text-elegant-black hover:bg-white transition-colors"
                                             title="Ver vista previa"
                                         >
-                                            <Eye size={20} />
+                                            <Eye size={18} />
                                         </button>
+                                        {isAuthenticated && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleFavorite(template);
+                                                }}
+                                                className={`p-3 rounded-full transition-colors ${favoriteIds.has(template.id) ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-600 hover:bg-red-100'}`}
+                                                title={favoriteIds.has(template.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                            >
+                                                <Heart size={18} fill={favoriteIds.has(template.id) ? 'currentColor' : 'none'} />
+                                            </button>
+                                        )}
                                         {purchasedIds.has(template.id) ? (
-                                            // Already purchased - show download button
                                             <a
                                                 href={`${TEMPLATES_URL}/${template.id}/download`}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="p-3 rounded-lg bg-green-500 text-white hover:bg-green-600 active:bg-green-700 transition-colors flex items-center gap-1"
-                                                title="Descargar plantilla"
+                                                className="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
+                                                title="Descargar"
                                                 download
                                             >
-                                                <Download size={20} />
+                                                <Download size={18} />
                                             </a>
                                         ) : (template.price || 0) === 0 ? (
-                                            // Free template - show claim button
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     claimFreeTemplate(template);
                                                 }}
-                                                className="p-3 rounded-lg bg-green-500 text-white hover:bg-green-600 active:bg-green-700 transition-colors flex items-center gap-1"
+                                                className="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"
                                                 title="Obtener gratis"
                                             >
-                                                <Gift size={20} />
+                                                <Gift size={18} />
                                             </button>
                                         ) : (
-                                            // Not purchased - show cart button
                                             <button
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
-
-                                                    if (!template.id) {
-                                                        alert(`Error: Esta plantilla "${template.title}" no tiene un ID válido.`);
-                                                        return;
-                                                    }
-
+                                                    if (!template.id) return;
                                                     const inCart = cart.some(item => item.templateId === template.id);
-                                                    if (inCart || addedToCart.has(template.id)) {
-                                                        alert('Esta plantilla ya está en tu carrito.');
-                                                        return;
-                                                    }
-
+                                                    if (inCart || addedToCart.has(template.id)) return;
                                                     try {
                                                         const result = await addToCart({
                                                             templateId: template.id,
@@ -442,27 +422,44 @@ export const TemplatesPage = () => {
                                                         });
                                                         if (result.success) {
                                                             setAddedToCart(prev => new Set([...prev, template.id]));
-                                                        } else {
-                                                            alert(result.message || 'No se pudo agregar al carrito.');
                                                         }
                                                     } catch (error) {
-                                                        console.error('Error adding to cart:', error);
-                                                        alert('Error de conexión.');
+                                                        console.error('Error:', error);
                                                     }
                                                 }}
-                                                className={`p-3 rounded-lg transition-colors flex items-center gap-1 ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
+                                                className={`p-3 rounded-full transition-colors ${cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
                                                     ? 'bg-green-500 text-white'
-                                                    : 'bg-primary-craft text-white hover:bg-primary-craft/80 active:bg-primary-craft/90'
+                                                    : 'bg-white/90 text-elegant-black hover:bg-white'
                                                     }`}
                                                 title={cart.some(item => item.templateId === template.id) ? 'En el carrito' : 'Agregar al carrito'}
                                             >
                                                 {cart.some(item => item.templateId === template.id) || addedToCart.has(template.id)
-                                                    ? <Check size={20} />
-                                                    : <ShoppingCart size={20} />}
+                                                    ? <Check size={18} />
+                                                    : <ShoppingCart size={18} />}
                                             </button>
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Price Badge */}
+                                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-elegant-black text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                    {(template.price || 0) === 0 ? 'GRATIS' : `$${(template.price || 0).toFixed(2)}`}
+                                </div>
+
+                                {/* Category Tag */}
+                                <div className="absolute top-3 left-3 bg-elegant-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                                    {getCategoryLabel(template.category)}
+                                </div>
+                            </div>
+
+                            {/* Minimal Content Below Image */}
+                            <div className="p-4">
+                                <h3 className="font-serif font-medium text-elegant-black line-clamp-1 group-hover:text-purple-600 transition-colors">
+                                    {template.title}
+                                </h3>
+                                <p className="text-elegant-gray text-sm mt-1 line-clamp-1">
+                                    {template.description || template.purpose}
+                                </p>
                             </div>
                         </motion.div>
                     ))}
