@@ -71,7 +71,7 @@ export const HomePage = () => {
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-elegant-black mb-6 leading-tight">
                             Las mejores plantillas
                             <br />
-                            <span className="italic text-elegant-gray">en un solo lugar</span>
+                            <span className="italic bg-gradient-to-r from-pastel-purple to-pastel-pink bg-clip-text text-transparent">en un solo lugar</span>
                         </h1>
 
                         <p className="text-elegant-gray text-lg mb-8 max-w-md">
@@ -80,7 +80,7 @@ export const HomePage = () => {
 
                         <Link to="/templates">
                             <motion.button
-                                className="bg-elegant-black text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-800 transition-all hover:shadow-xl"
+                                className="bg-gradient-to-r from-pastel-purple to-pastel-pink text-white px-8 py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all hover:shadow-xl shadow-[0_4px_20px_rgba(212,165,232,0.3)]"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
@@ -122,14 +122,14 @@ export const HomePage = () => {
                             </motion.div>
                         ))}
                         {/* Decorative elements */}
-                        <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-pink-200/50 rounded-full blur-2xl" />
-                        <div className="absolute -top-4 -right-4 w-32 h-32 bg-purple-200/50 rounded-full blur-2xl" />
+                        <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-pastel-pink/50 rounded-full blur-2xl" />
+                        <div className="absolute -top-4 -right-4 w-32 h-32 bg-pastel-purple/50 rounded-full blur-2xl" />
                     </motion.div>
                 </div>
             </section>
 
             {/* Featured Templates */}
-            <section className="py-16 px-6 bg-white/50">
+            <section className="py-16 px-6 bg-gradient-to-br from-white/50 via-pastel-lavender/20 to-blush-soft/30">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex justify-between items-center mb-10">
                         <h2 className="text-2xl md:text-3xl font-serif text-elegant-black">
@@ -155,7 +155,7 @@ export const HomePage = () => {
                             {templates.map((template, idx) => (
                                 <Link key={template.id} to={`/templates#${template.id}`}>
                                     <motion.div
-                                        className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all group cursor-pointer"
+                                        className="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(248,187,217,0.2)] hover:shadow-[0_8px_30px_rgba(212,165,232,0.3)] transition-all group cursor-pointer"
                                         initial={{ opacity: 0, y: 20 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
@@ -221,8 +221,8 @@ export const HomePage = () => {
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
                             >
-                                <div className="w-16 h-16 mx-auto mb-4 bg-cream rounded-2xl flex items-center justify-center">
-                                    <benefit.icon size={28} className="text-elegant-gray" strokeWidth={1.5} />
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-pastel-lavender to-blush-soft rounded-2xl flex items-center justify-center">
+                                    <benefit.icon size={28} className="text-pastel-purple" strokeWidth={1.5} />
                                 </div>
                                 <h3 className="font-medium text-elegant-black mb-2">{benefit.title}</h3>
                                 <p className="text-elegant-gray text-sm">{benefit.description}</p>
@@ -233,7 +233,7 @@ export const HomePage = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-16 px-6 bg-elegant-black text-white">
+            <section className="py-16 px-6 bg-gradient-to-r from-pastel-purple to-pastel-pink text-white">
                 <div className="max-w-3xl mx-auto text-center">
                     <motion.h2
                         className="text-2xl md:text-3xl font-serif mb-4"
@@ -259,7 +259,7 @@ export const HomePage = () => {
                         transition={{ delay: 0.2 }}
                     >
                         <Link to="/templates">
-                            <button className="bg-white text-elegant-black px-8 py-4 rounded-full font-medium hover:bg-gray-100 transition-colors">
+                            <button className="bg-white text-pastel-purple px-8 py-4 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg">
                                 Explorar Plantillas
                             </button>
                         </Link>

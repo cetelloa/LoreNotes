@@ -2,25 +2,31 @@
 
 @import "tailwindcss";
 
-/* Tailwind v4 Theme Configuration - Elegant Style */
+/* Tailwind v4 Theme Configuration - Pastel Pink & Purple */
 @theme {
-  /* Elegant Colors */
-  --color-cream: #f5f3ef;
-  --color-cream-dark: #ebe8e2;
-  --color-elegant-black: #1a1a1a;
-  --color-elegant-gray: #6b6b6b;
-  --color-elegant-light: #9a9a9a;
-  --color-lavender-soft: #e8e4f0;
-  --color-mint-soft: #d4e8e0;
-  --color-blush-soft: #f5e6e8;
+  /* Pastel Pink & Purple Palette */
+  --color-cream: #FFF5F8;
+  --color-cream-dark: #FFE8EE;
+  --color-elegant-black: #2D2438;
+  --color-elegant-gray: #6B5B7A;
+  --color-elegant-light: #A89BB5;
+  --color-lavender-soft: #E8D5F0;
+  --color-mint-soft: #F0E6F5;
+  --color-blush-soft: #FFE0E8;
   
-  /* Legacy compatibility */
-  --color-primary-craft: #1a1a1a;
-  --color-secondary-craft: #e8e4f0;
-  --color-accent-craft: #d4e8e0;
-  --color-paper-white: #f5f3ef;
-  --color-ink-black: #1a1a1a;
-  --color-craft-gray: #9a9a9a;
+  /* Pastel accent colors */
+  --color-pastel-pink: #FFB6C1;
+  --color-pastel-purple: #D4A5E8;
+  --color-pastel-lavender: #E6E0FA;
+  --color-pastel-rose: #F8BBD9;
+  
+  /* Legacy compatibility - updated for pastel theme */
+  --color-primary-craft: #9B6BB3;
+  --color-secondary-craft: #FFD6E0;
+  --color-accent-craft: #C9A8D8;
+  --color-paper-white: #FFF5F8;
+  --color-ink-black: #2D2438;
+  --color-craft-gray: #A89BB5;
 
   /* Fonts */
   --font-heading: 'Playfair Display', Georgia, serif;

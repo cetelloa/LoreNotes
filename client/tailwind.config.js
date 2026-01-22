@@ -7,21 +7,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Elegant palette
-        'cream': '#f5f3ef',
-        'cream-dark': '#ebe8e2',
-        'elegant-black': '#1a1a1a',
-        'elegant-gray': '#6b6b6b',
-        'elegant-light': '#9a9a9a',
-        'lavender-soft': '#e8e4f0',
-        'mint-soft': '#d4e8e0',
-        'blush-soft': '#f5e6e8',
-        // Keep some legacy colors for compatibility
-        'primary-craft': '#1a1a1a',
-        'secondary-craft': '#e8e4f0',
-        'accent-craft': '#d4e8e0',
-        'paper-white': '#f5f3ef',
-        'ink-black': '#1a1a1a',
+        // Pastel Pink & Purple palette
+        'cream': '#FFF5F8',
+        'cream-dark': '#FFE8EE',
+        'elegant-black': '#2D2438',
+        'elegant-gray': '#6B5B7A',
+        'elegant-light': '#A89BB5',
+        'lavender-soft': '#E8D5F0',
+        'mint-soft': '#F0E6F5',
+        'blush-soft': '#FFE0E8',
+        // Pastel accents
+        'pastel-pink': '#FFB6C1',
+        'pastel-purple': '#D4A5E8',
+        'pastel-lavender': '#E6E0FA',
+        'pastel-rose': '#F8BBD9',
+        // Legacy colors updated for pastel theme
+        'primary-craft': '#9B6BB3',
+        'secondary-craft': '#FFD6E0',
+        'accent-craft': '#C9A8D8',
+        'paper-white': '#FFF5F8',
+        'ink-black': '#2D2438',
       },
       fontFamily: {
         heading: ['Playfair Display', 'Georgia', 'serif'],
