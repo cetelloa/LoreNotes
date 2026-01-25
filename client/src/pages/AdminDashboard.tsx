@@ -116,9 +116,14 @@ export const AdminDashboard = () => {
 
     const fetchTemplates = async () => {
         try {
-            const res = await fetch(TEMPLATES_URL);
-            const data = await res.json();
-            setTemplates(data);
+            console.log('Fetching templates...');
+            // Add timestamp to prevent caching
+            const res = await fetch(`${TEMPLATES_URL}?t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                console.log('Templates fetched:', data.length);
+                setTemplates(data);
+            }
         } catch (err) { console.error('Error fetching templates:', err); }
     };
 
