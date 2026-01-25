@@ -244,7 +244,7 @@ export const HomePage = () => {
                         ¿Listo para crear algo increíble?
                     </motion.h2>
                     <motion.p
-                        className="text-gray-300 mb-8"
+                        className="text-purple-800/70 mb-8"
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
