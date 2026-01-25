@@ -238,7 +238,6 @@ export const AdminDashboard = () => {
         let finalCategory = category;
         if (category === 'otros' && customCategory.trim()) {
             try {
-                console.log('Creating new category:', customCategory.trim());
                 const catRes = await fetch(`${AUTH_URL}/categories`, {
                     method: 'POST',
                     headers: {
@@ -248,7 +247,6 @@ export const AdminDashboard = () => {
                     body: JSON.stringify({ name: customCategory.trim() })
                 });
                 const catData = await catRes.json();
-                console.log('Category response:', catData);
                 // Handle both success and "already exists" responses
                 if (catData.category && catData.category.slug) {
                     finalCategory = catData.category.slug;

@@ -4,14 +4,15 @@ const authController = require('../controllers/authController');
 const adminController = require('../controllers/adminController');
 const couponController = require('../controllers/couponController');
 const authMiddleware = require('../middleware/authMiddleware');
+const { authLimiter, passwordResetLimiter, reviewsLimiter } = require('../middleware/rateLimiter');
 
-// ========== PUBLIC ROUTES ==========
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/verify-email', authController.verifyEmail);
-router.post('/resend-code', authController.resendCode);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+// ========== PUBLIC ROUTES (with strict rate limiting) ==========
+router.post('/register', authLimiter, authController.register);
+router.post('/login', authLimiter, authController.login);
+router.post('/verify-email', authLimiter, authController.verifyEmail);
+router.post('/resend-code', authLimiter, authController.resendCode);
+router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
+router.post('/reset-password', passwordResetLimiter, authController.resetPassword);
 
 // ========== PROTECTED ROUTES (require auth) ==========
 router.get('/me', authMiddleware, adminController.getMe);
@@ -71,10 +72,10 @@ router.delete('/categories/:id', authMiddleware, categoryController.deleteCatego
 router.post('/reviews/bulk-stats', authController.getBulkReviewStats);
 router.get('/reviews/stats/:templateId', authController.getReviewStats);
 
-// Protected routes (specific paths)
-router.post('/reviews', authMiddleware, authController.createOrUpdateReview);
+// Protected routes (specific paths) - with rate limiting for writes
+router.post('/reviews', authMiddleware, reviewsLimiter, authController.createOrUpdateReview);
 router.get('/reviews/mine/:templateId', authMiddleware, authController.getMyReview);
-router.delete('/reviews/:templateId', authMiddleware, authController.deleteReview);
+router.delete('/reviews/:templateId', authMiddleware, reviewsLimiter, authController.deleteReview);
 
 // Generic route LAST (catches all other /reviews/:id patterns)
 router.get('/reviews/:templateId', authController.getTemplateReviews);
