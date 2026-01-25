@@ -591,7 +591,8 @@ export const AdminDashboard = () => {
 
                                                         if (res.ok) {
                                                             const data = await res.json();
-                                                            setEditingBlog({ ...editingBlog!, imageUrl: data.imageUrl });
+                                                            // Use functional update to avoid stale closure
+                                                            setEditingBlog(prev => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
                                                         } else {
                                                             alert('Error al subir imagen');
                                                         }
