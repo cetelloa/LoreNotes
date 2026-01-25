@@ -568,11 +568,69 @@ export const AdminDashboard = () => {
                                         className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
                                 </div>
                                 <div>
-                                    <label className="font-heading text-sm mb-1 block">URL de Imagen de Portada</label>
-                                    <input type="url" value={editingBlog.imageUrl || ''}
-                                        onChange={(e) => setEditingBlog({ ...editingBlog, imageUrl: e.target.value })}
-                                        placeholder="https://... (para posts sin video)"
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                    <label className="font-heading text-sm mb-1 block">Imagen de Portada</label>
+                                    <div className="space-y-2">
+                                        {/* File upload option */}
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+
+                                                    const formData = new FormData();
+                                                    formData.append('image', file);
+
+                                                    try {
+                                                        const res = await fetch(`${BLOG_URL}/upload-image`, {
+                                                            method: 'POST',
+                                                            headers: { 'Authorization': `Bearer ${token}` },
+                                                            body: formData
+                                                        });
+
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setEditingBlog({ ...editingBlog!, imageUrl: data.imageUrl });
+                                                        } else {
+                                                            alert('Error al subir imagen');
+                                                        }
+                                                    } catch (err) {
+                                                        alert('Error de conexión');
+                                                    }
+                                                }}
+                                                className="flex-1 p-2 bg-cream rounded-lg text-sm file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-elegant-black file:text-white file:text-xs hover:file:bg-gray-800"
+                                            />
+                                        </div>
+
+                                        {/* URL option */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-500">o URL:</span>
+                                            <input type="url" value={editingBlog.imageUrl || ''}
+                                                onChange={(e) => setEditingBlog({ ...editingBlog, imageUrl: e.target.value })}
+                                                placeholder="https://..."
+                                                className="flex-1 p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                        </div>
+
+                                        {/* Preview */}
+                                        {editingBlog.imageUrl && (
+                                            <div className="relative">
+                                                <img
+                                                    src={editingBlog.imageUrl}
+                                                    alt="Vista previa"
+                                                    className="w-full h-32 object-cover rounded-lg"
+                                                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingBlog({ ...editingBlog, imageUrl: '' })}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-gray-500 mt-1">Si hay video de YouTube, se usará su thumbnail automáticamente</p>
                                 </div>
                                 <div className="flex items-center gap-2">
