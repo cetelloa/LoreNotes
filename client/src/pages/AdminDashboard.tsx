@@ -598,15 +598,8 @@ export const AdminDashboard = () => {
 
                                                         if (res.ok) {
                                                             const data = await res.json();
-                                                            console.log('Image uploaded, setting imageUrl:', data.imageUrl?.substring(0, 50) + '...');
-
                                                             // Use functional update to avoid stale closure
-                                                            setEditingBlog(prev => {
-                                                                console.log('Previous imageUrl:', prev?.imageUrl?.substring(0, 50));
-                                                                const updated = prev ? { ...prev, imageUrl: data.imageUrl } : prev;
-                                                                console.log('New imageUrl set:', updated?.imageUrl?.substring(0, 50));
-                                                                return updated;
-                                                            });
+                                                            setEditingBlog(prev => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
 
                                                             uploadingAlert.textContent = '✓ Imagen subida!';
                                                             uploadingAlert.style.background = '#22c55e';
