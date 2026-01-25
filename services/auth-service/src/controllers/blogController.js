@@ -113,6 +113,14 @@ const updatePost = async (req, res) => {
     try {
         const { title, content, isPublished, tags, imageUrl, videoUrl } = req.body;
 
+        // Debug logging
+        console.log('Update post request:', {
+            postId: req.params.id,
+            hasImageUrl: !!imageUrl,
+            imageUrlLength: imageUrl?.length || 0,
+            hasVideoUrl: !!videoUrl
+        });
+
         // Get the current post to check if it was previously published
         const existingPost = await BlogPost.findById(req.params.id);
         const wasPublished = existingPost?.isPublished;
@@ -125,6 +133,8 @@ const updatePost = async (req, res) => {
 
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
+        console.log('Post updated, imageUrl saved:', !!post.imageUrl);
+
         // If just became published (wasn't before, is now), send notifications
         if (!wasPublished && isPublished) {
             sendNotificationsToSubscribers(post);
@@ -132,6 +142,7 @@ const updatePost = async (req, res) => {
 
         res.json(post);
     } catch (error) {
+        console.error('Update post error:', error);
         res.status(500).json({ message: 'Error al actualizar post', error: error.message });
     }
 };
