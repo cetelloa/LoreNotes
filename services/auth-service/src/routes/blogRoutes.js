@@ -17,11 +17,8 @@ const upload = multer({
     }
 });
 
-// Public routes
-router.get('/', blogController.getAllPosts);
-router.get('/:id', blogController.getPost);
-
-// Upload image endpoint (admin only)
+// ========== SPECIFIC ROUTES FIRST ==========
+// Upload image endpoint (admin only) - MUST be before /:id routes
 router.post('/upload-image', blogController.verifyAdmin, upload.single('image'), (req, res) => {
     try {
         if (!req.file) {
@@ -38,14 +35,20 @@ router.post('/upload-image', blogController.verifyAdmin, upload.single('image'),
     }
 });
 
-// Comment routes
-router.post('/:id/comments', blogController.addComment);  // Any authenticated user
-router.post('/:postId/comments/:commentId/reply', blogController.verifyAdmin, blogController.addReply);  // Admin only
+// Public routes
+router.get('/', blogController.getAllPosts);
 
-// Admin routes
+// Admin routes (specific paths)
 router.post('/', blogController.verifyAdmin, blogController.createPost);
+
+// ========== PARAMETERIZED ROUTES LAST ==========
+// Comment routes
+router.post('/:id/comments', blogController.addComment);
+router.post('/:postId/comments/:commentId/reply', blogController.verifyAdmin, blogController.addReply);
+
+// Single post routes (must be last because /:id catches everything)
+router.get('/:id', blogController.getPost);
 router.put('/:id', blogController.verifyAdmin, blogController.updatePost);
 router.delete('/:id', blogController.verifyAdmin, blogController.deletePost);
 
 module.exports = router;
-
