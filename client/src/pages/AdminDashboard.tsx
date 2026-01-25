@@ -26,6 +26,7 @@ interface BlogPost {
     createdAt?: string;
     isPublished: boolean;
     videoUrl?: string;
+    imageUrl?: string;
 }
 
 interface Sale {
@@ -565,6 +566,14 @@ export const AdminDashboard = () => {
                                         onChange={(e) => setEditingBlog({ ...editingBlog, videoUrl: e.target.value })}
                                         placeholder="https://youtube.com/watch?v=... o TikTok URL"
                                         className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                    <label className="font-heading text-sm mb-1 block">URL de Imagen de Portada</label>
+                                    <input type="url" value={editingBlog.imageUrl || ''}
+                                        onChange={(e) => setEditingBlog({ ...editingBlog, imageUrl: e.target.value })}
+                                        placeholder="https://... (para posts sin video)"
+                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                    <p className="text-xs text-gray-500 mt-1">Si hay video de YouTube, se usará su thumbnail automáticamente</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <input type="checkbox" checked={editingBlog.isPublished}
