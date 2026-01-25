@@ -19,20 +19,32 @@ const upload = multer({
 
 // ========== SPECIFIC ROUTES FIRST ==========
 // Upload image endpoint (admin only) - MUST be before /:id routes
-router.post('/upload-image', blogController.verifyAdmin, upload.single('image'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No se subió ninguna imagen' });
+router.post('/upload-image', blogController.verifyAdmin, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('Multer error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ message: 'La imagen es muy grande (máximo 5MB)' });
+            }
+            return res.status(400).json({ message: err.message || 'Error al procesar imagen' });
         }
 
-        // Convert to base64 data URL
-        const base64 = req.file.buffer.toString('base64');
-        const imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: 'No se subió ninguna imagen' });
+            }
 
-        res.json({ imageUrl });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al subir imagen', error: error.message });
-    }
+            // Convert to base64 data URL
+            const base64 = req.file.buffer.toString('base64');
+            const imageUrl = `data:${req.file.mimetype};base64,${base64}`;
+
+            console.log('Image uploaded successfully, size:', req.file.size);
+            res.json({ imageUrl });
+        } catch (error) {
+            console.error('Upload processing error:', error);
+            res.status(500).json({ message: 'Error al subir imagen', error: error.message });
+        }
+    });
 });
 
 // Public routes
