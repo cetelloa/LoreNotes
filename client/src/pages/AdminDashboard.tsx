@@ -579,6 +579,13 @@ export const AdminDashboard = () => {
                                                     const file = e.target.files?.[0];
                                                     if (!file) return;
 
+                                                    // Show loading state
+                                                    const uploadingAlert = document.createElement('div');
+                                                    uploadingAlert.id = 'uploading-alert';
+                                                    uploadingAlert.textContent = 'Subiendo imagen...';
+                                                    uploadingAlert.style.cssText = 'position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:10px 20px;border-radius:8px;z-index:9999';
+                                                    document.body.appendChild(uploadingAlert);
+
                                                     const formData = new FormData();
                                                     formData.append('image', file);
 
@@ -591,12 +598,25 @@ export const AdminDashboard = () => {
 
                                                         if (res.ok) {
                                                             const data = await res.json();
+                                                            console.log('Image uploaded, setting imageUrl:', data.imageUrl?.substring(0, 50) + '...');
+
                                                             // Use functional update to avoid stale closure
-                                                            setEditingBlog(prev => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
+                                                            setEditingBlog(prev => {
+                                                                console.log('Previous imageUrl:', prev?.imageUrl?.substring(0, 50));
+                                                                const updated = prev ? { ...prev, imageUrl: data.imageUrl } : prev;
+                                                                console.log('New imageUrl set:', updated?.imageUrl?.substring(0, 50));
+                                                                return updated;
+                                                            });
+
+                                                            uploadingAlert.textContent = '✓ Imagen subida!';
+                                                            uploadingAlert.style.background = '#22c55e';
+                                                            setTimeout(() => uploadingAlert.remove(), 2000);
                                                         } else {
+                                                            uploadingAlert.remove();
                                                             alert('Error al subir imagen');
                                                         }
                                                     } catch (err) {
+                                                        uploadingAlert.remove();
                                                         alert('Error de conexión');
                                                     }
                                                 }}
