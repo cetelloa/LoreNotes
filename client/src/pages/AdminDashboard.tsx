@@ -27,6 +27,7 @@ interface BlogPost {
     isPublished: boolean;
     videoUrl?: string;
     imageUrl?: string;
+    tags?: string[];
 }
 
 interface Sale {
@@ -534,46 +535,41 @@ export const AdminDashboard = () => {
             {/* Blog Tab */}
             {activeTab === 'blog' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                    {/* Blog Editor */}
+                    {/* Blog Editor Form */}
                     <motion.div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg md:text-xl font-serif flex items-center gap-2">
-                                {editingBlog?._id ? <><Edit size={20} /> Editar Post</> : <><Plus size={20} /> Nuevo Post</>}
-                            </h2>
-                            {!editingBlog && (
-                                <button onClick={() => setEditingBlog({ title: '', content: '', author: user?.username || 'Admin', isPublished: false })}
-                                    className="px-3 py-1 bg-accent-craft rounded-lg text-sm font-heading flex items-center gap-1">
-                                    <Plus size={16} /> Crear
-                                </button>
-                            )}
-                        </div>
+                        <h2 className="text-lg md:text-xl font-heading mb-4 flex items-center gap-2">
+                            {editingBlog?._id ? <><Edit size={20} /> Editar Post</> : <><Plus size={20} /> Nuevo Post</>}
+                        </h2>
 
                         {blogSuccess && <div className="bg-green-100 border-2 border-green-400 text-green-700 p-2 rounded-lg mb-3 text-sm">{blogSuccess}</div>}
                         {blogError && <div className="bg-red-100 border-2 border-red-400 text-red-700 p-2 rounded-lg mb-3 text-sm">{blogError}</div>}
 
                         {editingBlog ? (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="font-heading text-sm mb-1 block">Título</label>
+                                    <label className="text-elegant-gray text-sm mb-1 block">Título</label>
                                     <input type="text" value={editingBlog.title}
                                         onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value })}
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
+                                        placeholder="Título del post" />
                                 </div>
                                 <div>
-                                    <label className="font-heading text-sm mb-1 block">Contenido</label>
+                                    <label className="text-elegant-gray text-sm mb-1 block">Contenido</label>
                                     <textarea value={editingBlog.content}
                                         onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" rows={8} />
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all"
+                                        rows={8}
+                                        placeholder="Escribe tu contenido aquí..." />
                                 </div>
                                 <div>
-                                    <label className="font-heading text-sm mb-1 block">URL de Video (YouTube/TikTok)</label>
+                                    <label className="text-elegant-gray text-sm mb-1 block">URL de Video (YouTube/TikTok)</label>
                                     <input type="url" value={editingBlog.videoUrl || ''}
                                         onChange={(e) => setEditingBlog({ ...editingBlog, videoUrl: e.target.value })}
                                         placeholder="https://youtube.com/watch?v=... o TikTok URL"
-                                        className="w-full p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                        className="w-full p-3 bg-cream rounded-xl text-elegant-black focus:outline-none focus:ring-2 focus:ring-elegant-black/20 transition-all" />
                                 </div>
                                 <div>
-                                    <label className="font-heading text-sm mb-1 block">Imagen de Portada</label>
+                                    <label className="text-elegant-gray text-sm mb-1 block">Imagen de Portada</label>
                                     <div className="space-y-2">
                                         {/* File upload option */}
                                         <div className="flex items-center gap-2">
@@ -624,72 +620,88 @@ export const AdminDashboard = () => {
 
                                         {/* URL option */}
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-gray-500">o URL:</span>
+                                            <span className="text-xs text-elegant-gray">o URL:</span>
                                             <input type="url" value={editingBlog.imageUrl || ''}
                                                 onChange={(e) => setEditingBlog({ ...editingBlog, imageUrl: e.target.value })}
                                                 placeholder="https://..."
-                                                className="flex-1 p-2 border-2 border-dashed border-ink-black rounded-lg text-sm" />
+                                                className="flex-1 p-2 bg-cream rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-elegant-black/20" />
                                         </div>
 
                                         {/* Preview */}
                                         {editingBlog.imageUrl && (
-                                            <div className="relative">
+                                            <div className="relative mt-2">
                                                 <img
                                                     src={editingBlog.imageUrl}
                                                     alt="Vista previa"
-                                                    className="w-full h-32 object-cover rounded-lg"
+                                                    className="w-full h-32 object-cover rounded-xl border border-gray-100"
                                                     onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setEditingBlog({ ...editingBlog, imageUrl: '' })}
-                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+                                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors"
                                                 >
-                                                    ✕
+                                                    <Trash2 size={12} />
                                                 </button>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Si hay video de YouTube, se usará su thumbnail automáticamente</p>
+                                    <p className="text-xs text-elegant-gray mt-1">Si hay video de YouTube, se usará su thumbnail automáticamente</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <input type="checkbox" checked={editingBlog.isPublished}
-                                        onChange={(e) => setEditingBlog({ ...editingBlog, isPublished: e.target.checked })} />
-                                    <label className="text-sm">Publicado</label>
+                                <div className="flex items-center gap-2 bg-cream p-3 rounded-xl">
+                                    <div
+                                        onClick={() => setEditingBlog({ ...editingBlog, isPublished: !editingBlog.isPublished })}
+                                        className={`w-10 h-6 rounded-full p-1 cursor-pointer transition-colors ${editingBlog.isPublished ? 'bg-green-500' : 'bg-gray-300'}`}
+                                    >
+                                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${editingBlog.isPublished ? 'translate-x-4' : ''}`} />
+                                    </div>
+                                    <span className="text-sm font-medium text-elegant-black">{editingBlog.isPublished ? 'Publicado' : 'Borrador'}</span>
                                 </div>
-                                <div className="flex gap-2">
-                                    <CraftButton variant="primary" onClick={handleSaveBlogPost} className="flex-1 justify-center">
-                                        <Save size={16} /> Guardar
-                                    </CraftButton>
-                                    <button onClick={() => setEditingBlog(null)} className="px-4 py-2 bg-gray-200 rounded-lg">
+                                <div className="flex gap-3 pt-2">
+                                    <button onClick={handleSaveBlogPost} className="flex-1 bg-elegant-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+                                        <Save size={18} /> Guardar
+                                    </button>
+                                    <button onClick={() => setEditingBlog(null)} className="px-6 py-3 bg-cream text-elegant-gray rounded-full hover:bg-cream-dark transition-colors">
                                         Cancelar
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-gray-500 text-center py-8">Selecciona un post para editar o crea uno nuevo</p>
+                            <div className="text-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-xl">
+                                <FileText className="mx-auto text-gray-300 mb-3" size={48} />
+                                <p className="text-elegant-gray">Selecciona un post para editar o crea uno nuevo</p>
+                                <button
+                                    onClick={() => setEditingBlog({ title: '', content: '', author: user?.username || 'Admin', isPublished: false, tags: [], imageUrl: '' })}
+                                    className="mt-4 px-6 py-2 bg-elegant-black text-white rounded-full text-sm hover:bg-gray-800 transition-colors"
+                                >
+                                    Crear Post
+                                </button>
+                            </div>
                         )}
                     </motion.div>
 
                     {/* Blog Posts List */}
-                    <motion.div className="bg-white/95 p-4 md:p-6 rounded-xl border-4 border-ink-black shadow-lg">
+                    <motion.div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
                         <h2 className="text-lg md:text-xl font-heading mb-4">Posts del Blog ({blogPosts.length})</h2>
-                        <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                        <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                             {blogPosts.length === 0 ? (
-                                <p className="text-gray-500 text-center py-8">No hay posts de blog</p>
+                                <p className="text-elegant-gray text-center py-8">No hay posts de blog</p>
                             ) : blogPosts.map((post) => (
-                                <div key={post._id} className="flex items-center justify-between p-3 bg-paper-white rounded-lg border-2 border-dashed border-gray-300">
+                                <div key={post._id} className="flex items-center justify-between p-4 bg-cream/50 rounded-xl hover:bg-cream transition-colors group">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-heading font-bold text-sm truncate">{post.title}</h3>
-                                        <p className="text-xs text-gray-500">
-                                            {post.isPublished ? '✅ Publicado' : '📝 Borrador'} • {post.author}
-                                        </p>
+                                        <h3 className="font-medium text-elegant-black truncate font-serif">{post.title}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${post.isPublished ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                {post.isPublished ? 'Publicado' : 'Borrador'}
+                                            </span>
+                                            <span className="text-xs text-elegant-gray">• {new Date(post.createdAt || '').toLocaleDateString()}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-1 ml-2">
-                                        <button onClick={() => setEditingBlog(post)} className="p-2 text-blue-500 hover:bg-blue-50 rounded">
+                                    <div className="flex gap-2 ml-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => setEditingBlog(post)} className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDeleteBlogPost(post._id!)} className="p-2 text-red-500 hover:bg-red-50 rounded">
+                                        <button onClick={() => handleDeleteBlogPost(post._id!)} className="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-full transition-colors">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
